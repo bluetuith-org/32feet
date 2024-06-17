@@ -1,7 +1,7 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
 	<Sdk Name="DotNet.ReproducibleBuilds.Isolated" Version="1.1.1" />
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net6.0-windows7.0;net6.0-windows10.0.19041.0;net7.0;net7.0-windows7.0;net7.0-windows10.0.19041.0;net7.0-android;net7.0-ios;net462;monoandroid10.0;xamarinios10;uap10.0</TargetFrameworks>
+		<TargetFrameworks>net6.0-windows7.0;net6.0-windows10.0.19041.0</TargetFrameworks>
 		<Company>In The Hand Ltd</Company>
 		<Authors>Peter Foot</Authors>
 		<Product>32feet.NET</Product>
@@ -57,24 +57,10 @@
 		<None Include="README.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 
-	<PropertyGroup Condition="'$(TargetFramework)' == 'monoandroid10.0'">
-		<AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
-		<DefineConstants>$(DefineConstants);MONOANDROID10_0</DefineConstants>
-		<LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets</LanguageTargets>
-	</PropertyGroup>
-
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
 	</PropertyGroup>
 
-	<PropertyGroup Condition=" '$(TargetFramework)' == 'uap10.0' ">
-		<DefineConstants>UAP</DefineConstants>
-		<RuntimeIdentifiers>win10-x64;win10-x86;win10-arm;win10-arm64</RuntimeIdentifiers>
-		<TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.22000.0</TargetPlatformVersion>
-		<SupportedOSPlatformVersion>10.0.16299.0</SupportedOSPlatformVersion>
-		<TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
-	</PropertyGroup>
-	
 	<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.19041.0' ">
 		<DefineConstants>WinRT</DefineConstants>
 		<SupportedOSPlatformVersion>10.0.16299.0</SupportedOSPlatformVersion>
@@ -87,22 +73,6 @@
 		<TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
 	</PropertyGroup>
 
-	<ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">
-		<PackageReference Include="InTheHand.AndroidActivity" Version="1.0.4" />
-		<Reference Include="System.Xml.Linq" />
-		<Compile Include="Platforms\Android\*.cs" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0' ">
-		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-		<Compile Include="Platforms\Windows\*.cs" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'xamarinios10' ">
-		<Reference Include="System.Xml.Linq" />
-		<Compile Include="Platforms\iOS\*.cs" />
-	</ItemGroup>
-
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net35' ">
 		<Compile Include="Platforms\Win32\*.cs" />
 	</ItemGroup>
@@ -112,18 +82,6 @@
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
-		<Compile Include="Platforms\Win32\*.cs" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-		<PackageReference Include="Linux.Bluetooth" Version="5.66.0" />
-		<Compile Include="Platforms\Linux\*.cs" />
-		<Compile Include="Platforms\Win32\*.cs" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
-		<PackageReference Include="Linux.Bluetooth" Version="5.66.0" />
-		<Compile Include="Platforms\Linux\*.cs" />
 		<Compile Include="Platforms\Win32\*.cs" />
 	</ItemGroup>
 	
@@ -141,23 +99,5 @@
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net7.0-windows10.0.19041.0' ">
 		<Compile Include="Platforms\Windows\*.cs" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net6.0-android' ">
-		<PackageReference Include="InTheHand.AndroidActivity" Version="1.0.4" />
-		<Compile Include="Platforms\Android\*.cs" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net7.0-android' ">
-		<PackageReference Include="InTheHand.AndroidActivity" Version="1.0.4" />
-		<Compile Include="Platforms\Android\*.cs" />
-	</ItemGroup>
-	
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net6.0-ios' ">
-		<Compile Include="Platforms\iOS\*.cs" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net7.0-ios' ">
-		<Compile Include="Platforms\iOS\*.cs" />
 	</ItemGroup>
 </Project>
