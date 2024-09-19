@@ -236,6 +236,8 @@ namespace InTheHand.Net
         /// <see cref="M:InTheHand.Net.ObexListener.Stop"/>/<see cref="M:InTheHand.Net.ObexListener.Close"/>
         /// has been called.
         /// </returns>
+        Socket socket = null;
+        Stream stream = null;
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public ObexListenerContext GetContext()
         {
@@ -246,14 +248,11 @@ namespace InTheHand.Net
 
             try
             {
-                Socket socket;
-                Stream stream = null;
-
                 switch (transport)
                 {
                     case ObexTransport.Bluetooth:
                         var bluetoothClient = bListener.AcceptBluetoothClient();
-                        socket = bListener.AcceptBluetoothClient().Client;
+                        socket = bluetoothClient.Client;
                         if (socket == null)
                         {
                             stream = bluetoothClient.GetStream(); // platforms which don't use System.Net.Sockets can return a stream instead
