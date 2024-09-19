@@ -63,7 +63,7 @@ namespace InTheHand.Net.Sockets
         /// <summary>
         /// Forces the system to refresh the device information.
         /// </summary>
-        public void Refresh() =>  _bluetoothDeviceInfo.Refresh();
+        public void Refresh() => _bluetoothDeviceInfo.Refresh();
 
         /// <summary>
         /// Gets the device identifier.
@@ -87,7 +87,9 @@ namespace InTheHand.Net.Sockets
         /// <param name="cached">If true and supported on the runtime platform return locally cached devices without doing an SDP request.</param>
         /// <returns>All available Rfcomm service UUIDs on the remote device.</returns>
         public Task<IEnumerable<Guid>> GetRfcommServicesAsync(bool cached = true) => _bluetoothDeviceInfo.GetRfcommServicesAsync(cached);
-        
+
+        public Task<IEnumerable<Guid>> GetL2CapServicesAsync(bool cached = true) => _bluetoothDeviceInfo.GetL2CapServicesAsync(cached);
+
         /// <summary>
         /// Specifies whether the device is connected.
         /// </summary>
@@ -99,7 +101,7 @@ namespace InTheHand.Net.Sockets
         /// </summary>
         public bool Authenticated { get => _bluetoothDeviceInfo.Authenticated; }
 
-        
+
 
         /// <summary>
         /// Compares two BluetoothDeviceInfo instances for equality.
@@ -121,7 +123,7 @@ namespace InTheHand.Net.Sockets
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-            if(obj is BluetoothDeviceInfo info)
+            if (obj is BluetoothDeviceInfo info)
             {
                 return Equals(info);
             }

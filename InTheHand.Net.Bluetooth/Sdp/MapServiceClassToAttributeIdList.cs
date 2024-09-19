@@ -6,7 +6,6 @@
 // This source code is licensed under the MIT License
 
 using System;
-using InTheHand.Net.Bluetooth;
 using InTheHand.Net.Bluetooth.AttributeIds;
 
 namespace InTheHand.Net.Bluetooth.Sdp
@@ -25,7 +24,7 @@ namespace InTheHand.Net.Bluetooth.Sdp
         /// <summary>
         /// Initializes a new instance of the <see cref="T:InTheHand.Net.Bluetooth.MapServiceClassToAttributeIdList"/> class.
         /// </summary>
-        public MapServiceClassToAttributeIdList()        
+        public MapServiceClassToAttributeIdList()
         { }
 
         /// <summary>
@@ -58,22 +57,28 @@ namespace InTheHand.Net.Bluetooth.Sdp
             if (record == null) { throw new ArgumentNullException("record"); }
             //
             ServiceAttribute attr;
-            try {
+            try
+            {
                 attr = record.GetAttributeById(UniversalAttributeId.ServiceClassIdList);
-            } catch (System.Collections.Generic.KeyNotFoundException ex) {
+            }
+            catch (System.Collections.Generic.KeyNotFoundException ex)
+            {
                 System.Diagnostics.Debug.Assert(ex.Message == ServiceRecord.ErrorMsgNoAttributeWithId);
                 goto InvalidRecord;
             }
             ServiceElement element = attr.Value;
-            if (element.ElementType != ElementType.ElementSequence) {
+            if (element.ElementType != ElementType.ElementSequence)
+            {
                 goto InvalidRecord;
             }
             ServiceElement[] idElements = element.GetValueAsElementArray();
             //TODO ((GetServiceClassSpecificAttributeIdEnumDefiningType--foreach (ServiceElement curIdElem in idElements) {))
-            if (idElements.Length != 0) {
+            if (idElements.Length != 0)
+            {
                 ServiceElement curIdElem = idElements[0];
                 Type enumType = GetAttributeIdEnumType(curIdElem);
-                if (enumType != null) {
+                if (enumType != null)
+                {
                     return new Type[] { enumType };
                 }
             }//else fall through...
@@ -107,7 +112,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         {
             if (idElement == null) { throw new ArgumentNullException("idElement"); }
             //
-            if (idElement.ElementTypeDescriptor != ElementTypeDescriptor.Uuid) {
+            if (idElement.ElementTypeDescriptor != ElementTypeDescriptor.Uuid)
+            {
                 return null;
             }
             Guid uuid = idElement.GetValueAsUuid();
@@ -135,7 +141,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         /// </returns>
         protected virtual Type GetAttributeIdEnumType(Guid uuid)
         {
-            foreach (ServiceClassToIdsMapRow cur in m_serviceClassToIdsMapTable) {
+            foreach (ServiceClassToIdsMapRow cur in m_serviceClassToIdsMapTable)
+            {
                 if (uuid == cur.ServiceClassId) { return cur.AttributeIdEnumType; }
             }//for
             //
@@ -147,7 +154,7 @@ namespace InTheHand.Net.Bluetooth.Sdp
             public readonly Guid ServiceClassId;
             public readonly Type AttributeIdEnumType;
 
-            public ServiceClassToIdsMapRow(Guid ServiceClassId,Type AttributeIdEnumType)
+            public ServiceClassToIdsMapRow(Guid ServiceClassId, Type AttributeIdEnumType)
             {
                 this.ServiceClassId = ServiceClassId;
                 this.AttributeIdEnumType = AttributeIdEnumType;

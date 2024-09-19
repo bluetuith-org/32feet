@@ -67,6 +67,11 @@ namespace InTheHand.Net.Sockets
             }
         }
 
+        public BluetoothDeviceInfo DiscoverDeviceByAddress(string address, bool issueInquiryIfNotFound)
+        {
+            return _bluetoothClient.DiscoverDeviceByAddress(address, issueInquiryIfNotFound);
+        }
+
         /// <summary>
         /// Discovers accessible Bluetooth devices, and returns their names and addresses.
         /// </summary>

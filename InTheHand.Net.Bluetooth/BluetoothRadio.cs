@@ -1,11 +1,11 @@
-﻿// 32feet.NET - Personal Area Networking for .NET
+﻿
+// 32feet.NET - Personal Area Networking for .NET
 //
 // InTheHand.Net.Bluetooth.BluetoothRadio
 // 
 // Copyright (c) 2003-2024 In The Hand Ltd, All rights reserved.
 // This source code is licensed under the MIT License
 
-using InTheHand.Net.Sockets;
 using System;
 
 namespace InTheHand.Net.Bluetooth
@@ -15,7 +15,7 @@ namespace InTheHand.Net.Bluetooth
     /// </summary>
     public sealed partial class BluetoothRadio : IDisposable
     {
-        private static  BluetoothRadio s_default;
+        private static BluetoothRadio s_default;
 
         /// <summary>
         /// Returns the default Bluetooth radio (if present).
@@ -24,7 +24,7 @@ namespace InTheHand.Net.Bluetooth
         {
             get
             {
-                if(s_default == null)
+                if (s_default == null)
                 {
                     IBluetoothRadio radio = null;
 #if ANDROID || MONOANDROID

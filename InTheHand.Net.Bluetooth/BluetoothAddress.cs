@@ -6,7 +6,6 @@
 // This source code is licensed under the MIT License
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
@@ -90,7 +89,7 @@ namespace InTheHand.Net
         internal byte[] ToNetworkOrderSixByteArray()
         {
             byte[] bytes = new byte[6];
-            
+
             Buffer.BlockCopy(ToByteArray(), 0, bytes, 0, 6);
 
             for (int i = 0; i < 3; i++)

@@ -5,7 +5,6 @@
 // Copyright (c) 2003-2024 In The Hand Ltd, All rights reserved.
 // This source code is licensed under the MIT License
 
-using InTheHand.Net.Sockets;
 using System;
 
 namespace InTheHand.Net.Bluetooth
@@ -59,7 +58,12 @@ namespace InTheHand.Net.Bluetooth
         public static bool PairRequest(BluetoothAddress device, string pin = null)
         {
             return _bluetoothSecurity.PairRequest(device, pin, null);
-        }        
+        }
+
+        public static bool PairRequest(BluetoothAddress device, string pin = null, PairRequestCallBackFunc usercallback = null)
+        {
+            return _bluetoothSecurity.PairRequest(device, pin, null, usercallback);
+        }
 
         /// <summary>
         /// Requests that the specified device is un-paired.

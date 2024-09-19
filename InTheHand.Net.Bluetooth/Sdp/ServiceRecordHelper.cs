@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using InTheHand.Net.Bluetooth.AttributeIds;
 using System.Globalization;
@@ -62,7 +61,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
 
         static ServiceElement GetChannelElement(ServiceRecord record, BluetoothProtocolDescriptorType proto)
         {
-            if (!record.Contains(UniversalAttributeId.ProtocolDescriptorList)) {
+            if (!record.Contains(UniversalAttributeId.ProtocolDescriptorList))
+            {
                 goto NotFound;
             }
             ServiceAttribute attr = record.GetAttributeById(UniversalAttributeId.ProtocolDescriptorList);
@@ -87,12 +87,15 @@ namespace InTheHand.Net.Bluetooth.Sdp
             isSimpleRfcomm = true;
             Debug.Assert(attr != null, "attr != null");
             ServiceElement e0 = attr.Value;
-            if (e0.ElementType == ElementType.ElementAlternative) {
+            if (e0.ElementType == ElementType.ElementAlternative)
+            {
 
                 Debug.WriteLine("Don't support ElementAlternative ProtocolDescriptorList values.");
 
                 goto NotFound;
-            } else if (e0.ElementType != ElementType.ElementSequence) {
+            }
+            else if (e0.ElementType != ElementType.ElementSequence)
+            {
 
                 Debug.WriteLine("Bad ProtocolDescriptorList base element.");
 
@@ -104,7 +107,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             IList<ServiceElement> layerContent;
             ServiceElement channelElement;
             // -- L2CAP Layer --
-            if (!etor.MoveNext()) {
+            if (!etor.MoveNext())
+            {
 
                 Debug.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Protocol stack truncated before {0}.", "L2CAP"));
@@ -113,7 +117,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             }
             layer = etor.Current; //cast here are for non-Generic version.
             layerContent = layer.GetValueAsElementList();
-            if (layerContent[0].GetValueAsUuid() != BluetoothProtocol.L2CapProtocol) {
+            if (layerContent[0].GetValueAsUuid() != BluetoothProtocol.L2CapProtocol)
+            {
 
                 Debug.WriteLine(String.Format(CultureInfo.InvariantCulture,
                     "Bad protocol stack, layer {0} is not {1}.", 1, "L2CAP"));
@@ -122,8 +127,10 @@ namespace InTheHand.Net.Bluetooth.Sdp
             bool hasPsmEtc = layerContent.Count != 1;
             // Cast for FX1.1 object
             isSimpleRfcomm = (bool)isSimpleRfcomm && !hasPsmEtc;
-            if (proto == BluetoothProtocolDescriptorType.L2Cap) {
-                if (layerContent.Count < 2) {
+            if (proto == BluetoothProtocolDescriptorType.L2Cap)
+            {
+                if (layerContent.Count < 2)
+                {
 
                     Debug.WriteLine("L2CAP PSM element was requested but the L2CAP layer in this case hasn't a second element.");
 
@@ -134,7 +141,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             }
             //
             // -- RFCOMM Layer --
-            if (!etor.MoveNext()) {
+            if (!etor.MoveNext())
+            {
 
                 Debug.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Protocol stack truncated before {0}.", "RFCOMM"));
@@ -143,7 +151,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             }
             layer = etor.Current;
             layerContent = layer.GetValueAsElementList();
-            if (layerContent[0].GetValueAsUuid() != BluetoothProtocol.RFCommProtocol) {
+            if (layerContent[0].GetValueAsUuid() != BluetoothProtocol.RFCommProtocol)
+            {
 
                 Debug.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Bad protocol stack, layer {0} is not {1}.", 2, "RFCOMM"));
@@ -151,7 +160,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
                 goto NotFound;
             }
             //
-            if (layerContent.Count < 2) {
+            if (layerContent.Count < 2)
+            {
 
                 Debug.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Bad protocol stack, layer {0} hasn't a second element.", 2));
@@ -159,7 +169,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
                 goto NotFound;
             }
             channelElement = layerContent[1];
-            if (channelElement.ElementType != ElementType.UInt8) {
+            if (channelElement.ElementType != ElementType.UInt8)
+            {
 
                 Debug.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "Bad protocol stack, layer {0} is not UInt8.", 2));
@@ -195,7 +206,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         public static int GetRfcommChannelNumber(ServiceRecord record)
         {
             ServiceElement channelElement = GetRfcommChannelElement(record);
-            if (channelElement == null) {
+            if (channelElement == null)
+            {
                 return -1;
             }
             return GetRfcommChannelNumber(channelElement);
@@ -225,7 +237,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         public static int GetL2CapChannelNumber(ServiceRecord record)
         {
             ServiceElement channelElement = GetL2CapChannelElement(record);
-            if (channelElement == null) {
+            if (channelElement == null)
+            {
                 return -1;
             }
             return GetL2CapChannelNumber(channelElement);
@@ -256,10 +269,11 @@ namespace InTheHand.Net.Bluetooth.Sdp
         public static void SetRfcommChannelNumber(ServiceRecord record, byte channelNumber)
         {
             ServiceElement channelElement = GetRfcommChannelElement(record);
-            if (channelElement == null) {
+            if (channelElement == null)
+            {
                 throw new InvalidOperationException("ProtocolDescriptorList element does not exist or is not in the RFCOMM format.");
             }
-            
+
             Debug.Assert(channelElement.ElementType == ElementType.UInt8);
             channelElement.SetValue(channelNumber);
         }
@@ -297,12 +311,14 @@ namespace InTheHand.Net.Bluetooth.Sdp
                 throw new ArgumentOutOfRangeException("psm", "A PSM is a UInt16 value.");
             var psm16 = checked((ushort)psm);
             ServiceElement rfcommElement = GetRfcommChannelElement(record);
-            if (rfcommElement != null) {
+            if (rfcommElement != null)
+            {
                 Debug.WriteLine("Setting L2CAP PSM for a PDL that includes RFCOMM.");
             }
             ServiceElement channelElement = GetChannelElement(record, BluetoothProtocolDescriptorType.L2Cap);
             if (channelElement == null
-                    || channelElement.ElementType != ElementType.UInt16) {
+                    || channelElement.ElementType != ElementType.UInt16)
+            {
                 throw new InvalidOperationException("ProtocolDescriptorList element does not exist, is not in the L2CAP format, or it the L2CAP layer has no PSM element.");
             }
             channelElement.SetValue(psm16);
@@ -386,8 +402,10 @@ namespace InTheHand.Net.Bluetooth.Sdp
             baseChildren.Add(CreatePdlLayer((UInt16)ServiceRecordUtilities.HackProtocolId.L2Cap));
             baseChildren.Add(CreatePdlLayer((UInt16)ServiceRecordUtilities.HackProtocolId.Rfcomm,
                 new ServiceElement(ElementType.UInt8, (byte)0)));
-            foreach (ServiceElement nextLayer in upperLayers) {
-                if (nextLayer.ElementType != ElementType.ElementSequence) {
+            foreach (ServiceElement nextLayer in upperLayers)
+            {
+                if (nextLayer.ElementType != ElementType.ElementSequence)
+                {
                     throw new ArgumentException("Each layer in a ProtocolDescriptorList must be an ElementSequence.");
                 }
                 baseChildren.Add(nextLayer);
@@ -440,8 +458,10 @@ namespace InTheHand.Net.Bluetooth.Sdp
             IList<ServiceElement> baseChildren = new List<ServiceElement>();
             baseChildren.Add(CreatePdlLayer((UInt16)ServiceRecordUtilities.HackProtocolId.L2Cap,
                 new ServiceElement(ElementType.UInt16, (UInt16)0)));
-            foreach (ServiceElement nextLayer in upperLayers) {
-                if (nextLayer.ElementType != ElementType.ElementSequence) {
+            foreach (ServiceElement nextLayer in upperLayers)
+            {
+                if (nextLayer.ElementType != ElementType.ElementSequence)
+                {
                     throw new ArgumentException("Each layer in a ProtocolDescriptorList must be an ElementSequence.");
                 }
                 baseChildren.Add(nextLayer);
@@ -458,7 +478,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             curSeqChildren = new List<ServiceElement>();
             curValueElmt = new ServiceElement(ElementType.Uuid16, uuid);
             curSeqChildren.Add(curValueElmt);
-            foreach (ServiceElement element in data) {
+            foreach (ServiceElement element in data)
+            {
                 curSeqChildren.Add(element);
             }
             curSeqElmt = new ServiceElement(ElementType.ElementSequence, curSeqChildren);

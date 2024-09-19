@@ -6,8 +6,6 @@
 // Copyright (c) 2003-2020 In The Hand Ltd, All rights reserved.
 // This source code is licensed under the MIT License
 
-using InTheHand.Net.Bluetooth;
-
 namespace InTheHand.Net.Bluetooth.AttributeIds
 {
     /// <summary>

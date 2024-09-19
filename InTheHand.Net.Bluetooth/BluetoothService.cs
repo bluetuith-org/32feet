@@ -6,7 +6,6 @@
 // This source code is licensed under the MIT License
 
 using System;
-using System.Reflection;
 
 namespace InTheHand.Net.Bluetooth
 {
@@ -412,10 +411,12 @@ namespace InTheHand.Net.Bluetooth
         {
             System.Reflection.FieldInfo[] fields
                 = typeof(BluetoothService).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-            foreach (System.Reflection.FieldInfo curField in fields) {
+            foreach (System.Reflection.FieldInfo curField in fields)
+            {
                 object rawValue = curField.GetValue(null);
                 Guid fieldValue = (Guid)rawValue;
-                if (fieldValue.Equals(uuid)) {
+                if (fieldValue.Equals(uuid))
+                {
                     string fieldName = curField.Name;
                     return fieldName;
                 }
@@ -529,7 +530,7 @@ namespace InTheHand.Net.Bluetooth
         /// </returns>
         public static Guid CreateBluetoothUuid(int uuid32)
         {
-            // Base UUID: 00000000-0000-1000-8000-00805f9b34fb.
+            // Baseï¿½UUID:ï¿½00000000-0000-1000-8000-00805f9b34fb.
             Guid uuid = new Guid(uuid32, 0x0000, 0x1000, 0x80, 0x00, 0x00, 0x80, 0x5f, 0x9b, 0x34, 0xfb);
             return uuid;
         }

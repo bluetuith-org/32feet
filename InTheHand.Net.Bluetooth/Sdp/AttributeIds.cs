@@ -7,7 +7,6 @@
 // This source code is licensed under the MIT License
 
 using System;
-using System.Reflection;
 
 namespace InTheHand.Net.Bluetooth.AttributeIds
 {
@@ -139,38 +138,48 @@ namespace InTheHand.Net.Bluetooth.AttributeIds
         public static string GetName(ServiceAttributeId id, Type[] attributeIdDefiningClasses,
             LanguageBaseItem[] langBaseList, out LanguageBaseItem applicableLangBase)
         {
-            if (attributeIdDefiningClasses == null) {
+            if (attributeIdDefiningClasses == null)
+            {
                 throw new ArgumentNullException("attributeIdDefiningClasses");
             }
             //HACK if (langBaseList == null) {
-            if (langBaseList == null) {
+            if (langBaseList == null)
+            {
                 throw new ArgumentNullException("langBaseList");
             }
             // Foreach: class that defines AttributeId enum.
             //    Foreach: AttributeId enum field in that class.
             //       Check whether its value matches the one being searched for, and return if so.
             //
-            foreach (Type curDefiningType in attributeIdDefiningClasses) {
+            foreach (Type curDefiningType in attributeIdDefiningClasses)
+            {
                 //if (!(curDefiningType.IsSealed && curDefiningType.IsAbstract)) { }
                 //----
                 System.Reflection.FieldInfo[] fieldArr = curDefiningType.GetFields(
                     // With Public, no permissions required, apparently.
                     System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                foreach (System.Reflection.FieldInfo curField in fieldArr) {
-                    if (curField.FieldType == typeof(ServiceAttributeId)) {
+                foreach (System.Reflection.FieldInfo curField in fieldArr)
+                {
+                    if (curField.FieldType == typeof(ServiceAttributeId))
+                    {
                         // A multi-language attribute or a just a normal one?
                         object[] dotnetAtttrs = curField.GetCustomAttributes(typeof(StringWithLanguageBaseAttribute), false);
-                        if (dotnetAtttrs.Length != 0) {
+                        if (dotnetAtttrs.Length != 0)
+                        {
                             System.Diagnostics.Debug.Assert(dotnetAtttrs.Length == 1,
                                 "Not that it's a problem for us at all, but that Attribute should only be applied once.");
                             string name = GetNameIfMatchesMultiLang(id, curField, langBaseList, out applicableLangBase);
-                            if (name != null) {
+                            if (name != null)
+                            {
                                 return name;
                             }
-                        } else {
+                        }
+                        else
+                        {
                             // No just a normal Attribute, not language base offsetting.
                             string name = GetNameIfMatches(id, curField);
-                            if (name != null) {
+                            if (name != null)
+                            {
                                 applicableLangBase = null;
                                 return name;
                             }
@@ -188,11 +197,12 @@ namespace InTheHand.Net.Bluetooth.AttributeIds
         /// and using one of the languages from the supplied LanguageBaseItem 
         /// in the specified AttributeID class sets
         /// </summary>
-        private static string 
+        private static string
             GetNameIfMatchesMultiLang(ServiceAttributeId id, System.Reflection.FieldInfo curField,
             LanguageBaseItem[] langBaseList, out LanguageBaseItem applicableLangBase)
         {
-            foreach (LanguageBaseItem curBaseItem in langBaseList) {
+            foreach (LanguageBaseItem curBaseItem in langBaseList)
+            {
                 ServiceAttributeId baseOffset = curBaseItem.AttributeIdBase;
                 ServiceAttributeId realId = id;
                 unchecked { realId -= baseOffset; }
@@ -201,7 +211,8 @@ namespace InTheHand.Net.Bluetooth.AttributeIds
                 // and it would be an odd record that could produce those
                 // integers for wrong reasons).
                 string fieldName = GetNameIfMatches(realId, curField);
-                if (fieldName != null) {
+                if (fieldName != null)
+                {
                     applicableLangBase = curBaseItem;
                     return fieldName;
                 }
@@ -219,7 +230,8 @@ namespace InTheHand.Net.Bluetooth.AttributeIds
             rawValue = curField.GetRawConstantValue();
 
             ServiceAttributeId fieldValue = (ServiceAttributeId)rawValue;
-            if (fieldValue == id) {
+            if (fieldValue == id)
+            {
                 string fieldName = curField.Name;
                 return fieldName;
             }

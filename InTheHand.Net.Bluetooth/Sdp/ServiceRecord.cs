@@ -7,7 +7,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using InTheHand.Net.Bluetooth.AttributeIds;
 
@@ -242,7 +241,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "bytes")]
         public static ServiceRecord CreateServiceRecordFromBytes(byte[] recordBytes)
         {
-            if (recordBytes == null) {
+            if (recordBytes == null)
+            {
                 throw new ArgumentNullException("recordBytes");
             }
             ServiceRecord parsedRecord = new ServiceRecordParser().Parse(recordBytes);
@@ -350,18 +350,21 @@ namespace InTheHand.Net.Bluetooth.Sdp
         public ServiceAttribute GetAttributeById(ServiceAttributeId id)
         {
             bool found = TryGetAttributeById(id, out ServiceAttribute attribute);
-            if (!found) {
+            if (!found)
+            {
 
                 throw new KeyNotFoundException(ErrorMsgNoAttributeWithId);
             }
             System.Diagnostics.Debug.Assert(attribute != null);
             return attribute;
         }
-                
+
         private bool TryGetAttributeById(ServiceAttributeId id, out ServiceAttribute attribute)
         {
-            foreach (ServiceAttribute curAttr in m_attributes) {
-                if (curAttr.Id == id) {
+            foreach (ServiceAttribute curAttr in m_attributes)
+            {
+                if (curAttr.Id == id)
+                {
                     attribute = curAttr;
                     System.Diagnostics.Debug.Assert(attribute != null);
                     return true;
@@ -421,7 +424,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             {
                 ServiceAttributeId[] ids = new ServiceAttributeId[Count];
                 int i = 0;
-                foreach (ServiceAttribute curAttr in m_attributes) {
+                foreach (ServiceAttribute curAttr in m_attributes)
+                {
                     ids[i] = curAttr.Id;
                     ++i;
                 }//for
@@ -495,7 +499,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             short offset = (short)baseId;
             ServiceAttributeId actualId = id + offset;
             // If either had the MSB set, then the result must also!
-            if ((actualId < 0) ^ ((id < 0) || (baseId < 0))) {
+            if ((actualId < 0) ^ ((id < 0) || (baseId < 0)))
+            {
                 throw new OverflowException();
             }
             return actualId;
@@ -629,7 +634,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         public String GetPrimaryMultiLanguageStringAttributeById(ServiceAttributeId id)
         {
             LanguageBaseItem lang = this.GetPrimaryLanguageBaseItem();
-            if (lang == null) {
+            if (lang == null)
+            {
                 lang = LanguageBaseItem.CreateEnglishUtf8PrimaryLanguageItem();
             }
             return GetMultiLanguageStringAttributeById(id, lang);
@@ -654,17 +660,22 @@ namespace InTheHand.Net.Bluetooth.Sdp
         /// <seealso cref="M:InTheHand.Net.Bluetooth.ServiceRecord.GetPrimaryLanguageBaseItem"/>
         public LanguageBaseItem[] GetLanguageBaseList()
         {
-            if (!Contains(InTheHand.Net.Bluetooth.AttributeIds.UniversalAttributeId.LanguageBaseAttributeIdList)) {
+            if (!Contains(InTheHand.Net.Bluetooth.AttributeIds.UniversalAttributeId.LanguageBaseAttributeIdList))
+            {
                 return new LanguageBaseItem[0];
             }
             ServiceAttribute attr = GetAttributeById(InTheHand.Net.Bluetooth.AttributeIds.UniversalAttributeId.LanguageBaseAttributeIdList);
-            if (attr.Value.ElementType != ElementType.ElementSequence) {
+            if (attr.Value.ElementType != ElementType.ElementSequence)
+            {
                 return new LanguageBaseItem[0];
             }
             LanguageBaseItem[] langList;
-            try {
+            try
+            {
                 langList = LanguageBaseItem.ParseListFromElementSequence(attr.Value);
-            } catch (System.Net.ProtocolViolationException) {
+            }
+            catch (System.Net.ProtocolViolationException)
+            {
                 return new LanguageBaseItem[0];
             }
             return langList;
@@ -697,7 +708,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             LanguageBaseItem[] list = GetLanguageBaseList();
             System.Diagnostics.Debug.Assert(list != null);
             const ServiceAttributeId PrimaryBaseId = (ServiceAttributeId)0x0100;
-            foreach (LanguageBaseItem item in list) {
+            foreach (LanguageBaseItem item in list)
+            {
                 if (item.AttributeIdBase == PrimaryBaseId) { return item; }
             }//for
             return null;
@@ -800,9 +812,12 @@ namespace InTheHand.Net.Bluetooth.Sdp
                 if (m_record == null) { throw new ObjectDisposedException(this.GetType().Name); }
                 ++m_currentIndex;
                 System.Diagnostics.Debug.Assert(m_currentIndex >= 0);
-                if (m_currentIndex >= 0 && m_currentIndex < m_record.Count) {
+                if (m_currentIndex >= 0 && m_currentIndex < m_record.Count)
+                {
                     return true;
-                } else {
+                }
+                else
+                {
                     m_currentIndex = m_record.Count;
                     return false;
                 }
