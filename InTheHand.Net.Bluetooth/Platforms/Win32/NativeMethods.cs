@@ -6,7 +6,6 @@
 // This source code is licensed under the MIT License
 
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace InTheHand.Net.Bluetooth.Win32
@@ -22,7 +21,7 @@ namespace InTheHand.Net.Bluetooth.Win32
         internal const int BTH_PORT_ANY = -1;
         internal const int BTH_MAX_NAME_SIZE = 248;
 
-        private static bool? _isRunningOnMono; 
+        private static bool? _isRunningOnMono;
         public static bool IsRunningOnMono()
         {
 #if DEBUG
@@ -36,7 +35,7 @@ namespace InTheHand.Net.Bluetooth.Win32
             return _isRunningOnMono.Value;
         }
 
-        
+
         // Authentication
         [DllImport(bthpropsDll, ExactSpelling = true, SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern int BluetoothRegisterForAuthenticationEx(ref BLUETOOTH_DEVICE_INFO pbtdi, out IntPtr phRegHandle, BluetoothAuthenticationCallbackEx pfnCallback, IntPtr pvParam);
@@ -78,7 +77,7 @@ namespace InTheHand.Net.Bluetooth.Win32
         [DllImport(bthpropsDll, ExactSpelling = true, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool BluetoothFindRadioClose(IntPtr hFind);
-        
+
         [DllImport(bthpropsDll, ExactSpelling = true, SetLastError = true)]
         internal static extern int BluetoothGetRadioInfo(IntPtr hRadio, ref BLUETOOTH_RADIO_INFO pRadioInfo);
 
@@ -89,7 +88,7 @@ namespace InTheHand.Net.Bluetooth.Win32
         [DllImport(bthpropsDll, ExactSpelling = true, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool BluetoothIsConnectable(IntPtr hRadio);
-        
+
         [DllImport(bthpropsDll, ExactSpelling = true, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool BluetoothIsDiscoverable(IntPtr hRadio);
@@ -98,7 +97,7 @@ namespace InTheHand.Net.Bluetooth.Win32
         [DllImport(bthpropsDll, ExactSpelling = true, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool BluetoothEnableDiscovery(IntPtr hRadio, bool fEnabled);
-        
+
         [DllImport(bthpropsDll, ExactSpelling = true, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool BluetoothEnableIncomingConnections(IntPtr hRadio, bool fEnabled);
@@ -118,7 +117,7 @@ namespace InTheHand.Net.Bluetooth.Win32
 
         [DllImport(bthpropsDll, ExactSpelling = true, SetLastError = true)]
         internal static extern int BluetoothEnumerateInstalledServices(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi, ref int pcServices, byte[] pGuidServices);
-        
+
         [DllImport(bthpropsDll, ExactSpelling = true, SetLastError = true)]
         internal static extern int BluetoothSetServiceState(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi, ref Guid pGuidService, uint dwServiceFlags);
 

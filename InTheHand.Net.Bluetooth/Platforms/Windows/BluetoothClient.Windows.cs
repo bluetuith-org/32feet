@@ -50,11 +50,17 @@ namespace InTheHand.Net.Sockets
             }
         }
 
+        public BluetoothDeviceInfo DiscoverDeviceByAddress(string address, bool issueInquiryIfNotFound)
+        {
+            var device = Task.Run(async () => await BluetoothDevice.FromIdAsync(address)).GetAwaiter().GetResult();
+            return new BluetoothDeviceInfo(new WindowsBluetoothDeviceInfo(device));
+        }
+
         public IReadOnlyCollection<BluetoothDeviceInfo> DiscoverDevices(int maxDevices)
         {
             List<BluetoothDeviceInfo> results = new List<BluetoothDeviceInfo>();
 
-            var devices = InTheHand.Threading.Tasks.AsyncHelpers.RunSync<DeviceInformationCollection>(async ()=>
+            var devices = InTheHand.Threading.Tasks.AsyncHelpers.RunSync<DeviceInformationCollection>(async () =>
             {
                 return await DeviceInformation.FindAllAsync(BluetoothDevice.GetDeviceSelectorFromPairingState(false));
             });
@@ -74,8 +80,8 @@ namespace InTheHand.Net.Sockets
         public async IAsyncEnumerable<BluetoothDeviceInfo> DiscoverDevicesAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var devices = await DeviceInformation.FindAllAsync(BluetoothDevice.GetDeviceSelectorFromPairingState(false)).AsTask(cancellationToken);
-            
-            foreach(var device in devices)
+
+            foreach (var device in devices)
             {
                 yield return new BluetoothDeviceInfo(new WindowsBluetoothDeviceInfo(await BluetoothDevice.FromIdAsync(device.Id)));
             }
@@ -91,7 +97,7 @@ namespace InTheHand.Net.Sockets
             {
                 var rfCommService = rfcommServices.Services[0];
                 _streamSocket = new StreamSocket();
-                await _streamSocket.ConnectAsync(rfCommService.ConnectionHostName, rfCommService.ConnectionServiceName, Authenticate ? SocketProtectionLevel.BluetoothEncryptionWithAuthentication : SocketProtectionLevel.BluetoothEncryptionAllowNullAuthentication);
+                await _streamSocket.ConnectAsync(rfCommService.ConnectionHostName, rfCommService.ConnectionServiceName, SocketProtectionLevel.BluetoothEncryptionAllowNullAuthentication);
             }
         }
 
@@ -128,7 +134,7 @@ namespace InTheHand.Net.Sockets
 
         public bool Authenticate { get => _authenticate; set => _authenticate = value; }
 
-        Socket IBluetoothClient.Client { get => throw new PlatformNotSupportedException(); }
+        Socket IBluetoothClient.Client { get => null; }
 
         public bool Connected
         {

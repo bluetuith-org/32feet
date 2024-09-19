@@ -10,15 +10,15 @@ using InTheHand.Net.Sockets;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace InTheHand.Net.Bluetooth
 {
     internal sealed class Win32BluetoothSecurity : IBluetoothSecurity
     {
+        private PairRequestCallBackFunc _usercallback = null;
         private static readonly List<Win32BluetoothAuthentication> _authenticationHandlers = new List<Win32BluetoothAuthentication>();
-                
-        public bool PairRequest(BluetoothAddress device, string pin, bool? requireMitmProtection)
+
+        public bool PairRequest(BluetoothAddress device, string pin, bool? requireMitmProtection, PairRequestCallBackFunc usercallback = null)
         {
             if (pin != null)
             {
@@ -26,24 +26,26 @@ namespace InTheHand.Net.Bluetooth
                     throw new ArgumentOutOfRangeException(nameof(pin));
             }
 
+            _usercallback = usercallback;
+
             BLUETOOTH_DEVICE_INFO info = new BLUETOOTH_DEVICE_INFO();
             info.dwSize = Marshal.SizeOf(info);
             info.Address = device;
 
             RemoveRedundantAuthHandler(device);
-            
+
             NativeMethods.BluetoothGetDeviceInfo(IntPtr.Zero, ref info);
             // don't wait on this process if already paired
             if (info.fAuthenticated)
                 return true;
 
-            var authHandler = new Win32BluetoothAuthentication(device, pin);
-           
+            var authHandler = new Win32BluetoothAuthentication(device, pin, _usercallback);
+
             // Handle response without prompt
             _authenticationHandlers.Add(authHandler);
 
             BluetoothAuthenticationRequirements mitmProtection = BluetoothAuthenticationRequirements.MITMProtectionRequiredBonding;
-            if(requireMitmProtection == false)
+            if (requireMitmProtection == false)
             {
                 mitmProtection = BluetoothAuthenticationRequirements.MITMProtectionNotRequiredBonding;
             }
@@ -61,7 +63,7 @@ namespace InTheHand.Net.Bluetooth
             deviceInfo.Refresh();
 
             // On Windows 7 these services are not automatically activated
-            if(deviceInfo.ClassOfDevice.Device == DeviceClass.AudioVideoHeadset || deviceInfo.ClassOfDevice.Device == DeviceClass.AudioVideoHandsFree)
+            if (deviceInfo.ClassOfDevice.Device == DeviceClass.AudioVideoHeadset || deviceInfo.ClassOfDevice.Device == DeviceClass.AudioVideoHandsFree)
             {
                 deviceInfo.SetServiceState(BluetoothService.Headset, true);
                 deviceInfo.SetServiceState(BluetoothService.Handsfree, true);

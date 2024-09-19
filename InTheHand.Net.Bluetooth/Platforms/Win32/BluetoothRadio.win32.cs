@@ -7,8 +7,6 @@
 
 using InTheHand.Net.Bluetooth.Win32;
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace InTheHand.Net.Bluetooth
 {
@@ -23,7 +21,7 @@ namespace InTheHand.Net.Bluetooth
             if (hRadio != IntPtr.Zero)
             {
                 int result = NativeMethods.BluetoothGetRadioInfo(hRadio, ref info);
-                if(result != 0)
+                if (result != 0)
                 {
                     throw new PlatformNotSupportedException();
                 }
@@ -118,9 +116,9 @@ namespace InTheHand.Net.Bluetooth
             }
         }
 
-        public BluetoothVersion LmpVersion 
-        { 
-            get 
+        public BluetoothVersion LmpVersion
+        {
+            get
             {
                 // the Win32 API doesn't recognise versions beyond 2.1
                 if (NativeMethods.BluetoothIsVersionAvailable(2, 1))
@@ -150,7 +148,7 @@ namespace InTheHand.Net.Bluetooth
         /// <summary>
         /// Returns the manufacturer of the BluetoothRadio device.
         /// </summary>
-        public CompanyIdentifier Manufacturer {  get=> (CompanyIdentifier)_radio.manufacturer; }
+        public CompanyIdentifier Manufacturer { get => (CompanyIdentifier)_radio.manufacturer; }
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
@@ -163,7 +161,7 @@ namespace InTheHand.Net.Bluetooth
                 {
                 }
 
-                if(_handle != IntPtr.Zero)
+                if (_handle != IntPtr.Zero)
                 {
                     NativeMethods.CloseHandle(_handle);
                     _handle = IntPtr.Zero;

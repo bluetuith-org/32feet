@@ -8,8 +8,6 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace InTheHand.Net.Sockets
 {
@@ -29,7 +27,7 @@ namespace InTheHand.Net.Sockets
 
         public override void Close()
         {
-            if(_ownsSocket)
+            if (_ownsSocket)
             {
                 _socket.Close();
             }

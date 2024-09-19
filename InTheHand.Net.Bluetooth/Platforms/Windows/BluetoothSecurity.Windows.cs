@@ -17,7 +17,7 @@ namespace InTheHand.Net.Bluetooth
     {
         private static Dictionary<string, string> pinMappings = new Dictionary<string, string>();
 
-        public bool PairRequest(BluetoothAddress device, string pin, bool? requireMitmProtection)
+        public bool PairRequest(BluetoothAddress device, string pin, bool? requireMitmProtection, PairRequestCallBackFunc usercallback = null)
         {
             BluetoothDevice bluetoothDevice = null;
             var t = Task<bool>.Run(async () =>
@@ -70,6 +70,6 @@ namespace InTheHand.Net.Bluetooth
             t.Wait();
 
             return t.Result;
-        }  
+        }
     }
 }

@@ -8,9 +8,9 @@
 using InTheHand.Net.Bluetooth.Win32;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -70,6 +70,63 @@ namespace InTheHand.Net.Sockets
             }
         }
 
+        /// <summary>
+        /// Finds a Bluetooth device by its address.
+        /// </summary>
+        /// <param name="address">The address of the device to find.</param>
+        /// <param name="issueInquiryIfNotFound">If true, if the device is not found, the function will issue an inquiry to find the device.  If false, it will throw an exception.</param>
+        /// <returns>The device info for the found device, or null if not found.</returns>
+        public BluetoothDeviceInfo DiscoverDeviceByAddress(string address, bool issueInquiryIfNotFound = false)
+        {
+            BluetoothDeviceInfo bluetoothDeviceInfo = null;
+            BluetoothAddress baddr = BluetoothAddress.Parse(address);
+
+            BLUETOOTH_DEVICE_INFO device = new BLUETOOTH_DEVICE_INFO();
+            device.dwSize = Marshal.SizeOf(device);
+            device.Address = baddr.ToUInt64();
+
+            var _handle = NativeMethods.BluetoothGetDeviceInfo(IntPtr.Zero, ref device);
+            if (_handle == 0)
+            {
+                bluetoothDeviceInfo = new BluetoothDeviceInfo(new Win32BluetoothDeviceInfo(device));
+                issueInquiryIfNotFound = false;
+            }
+            if (!issueInquiryIfNotFound)
+            {
+                goto DeviceInfo;
+            }
+
+            BLUETOOTH_DEVICE_SEARCH_PARAMS search = BLUETOOTH_DEVICE_SEARCH_PARAMS.Create();
+            search.cTimeoutMultiplier = 6;
+            search.fReturnAuthenticated = true;
+            search.fReturnRemembered = true;
+            search.fReturnUnknown = true;
+            search.fReturnConnected = true;
+            search.fIssueInquiry = true;
+
+            IntPtr searchHandle = NativeMethods.BluetoothFindFirstDevice(ref search, ref device);
+            if (searchHandle != IntPtr.Zero)
+            {
+                while (device.Address != baddr)
+                    NativeMethods.BluetoothFindNextDevice(searchHandle, ref device);
+
+                if (device.Address == baddr)
+                {
+                    bluetoothDeviceInfo = new BluetoothDeviceInfo(new Win32BluetoothDeviceInfo(device));
+                }
+
+                NativeMethods.BluetoothFindDeviceClose(searchHandle);
+            }
+
+        DeviceInfo:
+            if (bluetoothDeviceInfo == null)
+            {
+                throw new ArgumentException($"No device found by provided address ({address}).", nameof(address));
+            }
+
+            return bluetoothDeviceInfo;
+        }
+
         public IReadOnlyCollection<BluetoothDeviceInfo> DiscoverDevices(int maxDevices)
         {
             List<BluetoothDeviceInfo> devices = new List<BluetoothDeviceInfo>();
@@ -81,19 +138,13 @@ namespace InTheHand.Net.Sockets
             search.fReturnConnected = true;
             search.fIssueInquiry = true;
             search.cTimeoutMultiplier = Convert.ToByte(InquiryLength.TotalSeconds / 1.28);
-            
+
             BLUETOOTH_DEVICE_INFO device = BLUETOOTH_DEVICE_INFO.Create();
             IntPtr searchHandle = NativeMethods.BluetoothFindFirstDevice(ref search, ref device);
-            if(searchHandle != IntPtr.Zero)
+            if (searchHandle != IntPtr.Zero)
             {
                 NativeMethods.BluetoothGetDeviceInfo(IntPtr.Zero, ref device);
                 devices.Add(new BluetoothDeviceInfo(new Win32BluetoothDeviceInfo(device)));
-
-                while (NativeMethods.BluetoothFindNextDevice(searchHandle, ref device) && devices.Count < maxDevices)
-                {
-                    NativeMethods.BluetoothGetDeviceInfo(IntPtr.Zero, ref device);
-                    devices.Add(new BluetoothDeviceInfo(new Win32BluetoothDeviceInfo(device)));
-                }
 
                 NativeMethods.BluetoothFindDeviceClose(searchHandle);
             }
@@ -113,29 +164,36 @@ namespace InTheHand.Net.Sockets
                     devices.Remove(new BluetoothDeviceInfo(new Win32BluetoothDeviceInfo(device)));
                 }
 
-                while (NativeMethods.BluetoothFindNextDevice(searchHandle, ref device))
+                if (device.LastSeen < DateTime.Now.AddMinutes(-1))
                 {
-                    if (device.LastSeen < DateTime.Now.AddMinutes(-1))
-                    {
-                        devices.Remove(new BluetoothDeviceInfo(new Win32BluetoothDeviceInfo(device)));
-                    }
+                    devices.Remove(new BluetoothDeviceInfo(new Win32BluetoothDeviceInfo(device)));
                 }
 
                 NativeMethods.BluetoothFindDeviceClose(searchHandle);
             }
 
-            return devices.AsReadOnly();
+            return devices?.AsReadOnly();
         }
 
 #if NET6_0_OR_GREATER
-        public async IAsyncEnumerable<BluetoothDeviceInfo> DiscoverDevicesAsync([EnumeratorCancellation]  CancellationToken cancellationToken)
+        /// <summary>
+        /// Asynchronously discover Bluetooth devices.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>An asynchronous enumerator of discovered Bluetooth devices.</returns>
+        public async IAsyncEnumerable<BluetoothDeviceInfo> DiscoverDevicesAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            foreach(var device in DiscoverDevices(255))
+            // Call the synchronous version of DiscoverDevices, passing in a limit of 255 devices.
+            // This is a workaround for the fact that the Win32 Bluetooth API doesn't allow us to
+            // pass a cancellation token to the synchronous version of the method.
+            foreach (var device in DiscoverDevices(255))
             {
+                // Yield each discovered device to the caller.
                 yield return device;
             }
         }
 #endif
+
 
         public void Connect(BluetoothAddress address, Guid service)
         {
@@ -236,7 +294,7 @@ namespace InTheHand.Net.Sockets
         {
             if (NativeMethods.IsRunningOnMono())
                 throw new PlatformNotSupportedException("Async Socket operations not currently supported on Mono");
-            
+
             if (remoteEP == null)
                 throw new ArgumentNullException(nameof(remoteEP));
 
@@ -253,23 +311,23 @@ namespace InTheHand.Net.Sockets
 
         public void Close()
         {
-            if(_socket != null && _socket.Connected)
+            if (_socket != null && _socket.Connected)
                 _socket.Close();
         }
 
         private bool _authenticate;
 
-        public bool Authenticate 
-        { 
-            get => _authenticate; 
-            set 
+        public bool Authenticate
+        {
+            get => _authenticate;
+            set
             {
                 if (_authenticate != value)
                 {
                     _socket.SetSocketOption(SocketOptionLevelRFComm, SocketOptionNameAuthenticate, value);
                     _authenticate = value;
                 }
-            } 
+            }
         }
 
         public Socket Client { get => _socket; }
@@ -289,10 +347,10 @@ namespace InTheHand.Net.Sockets
         }
 
         private bool _encrypt = false;
-        public bool Encrypt 
-        { 
+        public bool Encrypt
+        {
             get => _encrypt;
-            set 
+            set
             {
                 if (_encrypt != value)
                 {
@@ -304,10 +362,10 @@ namespace InTheHand.Net.Sockets
 
         //length of time for query
         private TimeSpan _inquiryLength = new TimeSpan(0, 0, 10);
-        public TimeSpan InquiryLength 
-        { 
-            get => _inquiryLength; 
-            set 
+        public TimeSpan InquiryLength
+        {
+            get => _inquiryLength;
+            set
             {
                 if ((value.TotalSeconds > 0) && (value.TotalSeconds <= 61))
                 {
@@ -318,7 +376,7 @@ namespace InTheHand.Net.Sockets
                     throw new ArgumentOutOfRangeException(nameof(InquiryLength),
                         "InquiryLength must be a positive TimeSpan between 0 and 61 seconds.");
                 }
-            } 
+            }
         }
 
         string IBluetoothClient.RemoteMachineName

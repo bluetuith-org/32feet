@@ -24,6 +24,8 @@ namespace InTheHand.Net.Sockets
 
         IEnumerable<BluetoothDeviceInfo> PairedDevices { get; }
 
+        BluetoothDeviceInfo DiscoverDeviceByAddress(string address, bool issueInquiryIfNotFound);
+
         IReadOnlyCollection<BluetoothDeviceInfo> DiscoverDevices(int maxDevices);
 #if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         IAsyncEnumerable<BluetoothDeviceInfo> DiscoverDevicesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default);

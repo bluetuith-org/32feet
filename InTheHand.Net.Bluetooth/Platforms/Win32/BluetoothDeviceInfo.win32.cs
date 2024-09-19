@@ -68,7 +68,12 @@ namespace InTheHand.Net.Sockets
 
         public ClassOfDevice ClassOfDevice { get => (ClassOfDevice)_info.ulClassofDevice; }
 
-        public Task<IEnumerable<Guid>> GetRfcommServicesAsync(bool cached)
+        public Task<IEnumerable<Guid>> GetRfcommServicesAsync(bool cached) => GetServicesAsync(BluetoothProtocol.RFCommProtocol, cached);
+
+        public Task<IEnumerable<Guid>> GetL2CapServicesAsync(bool cached) => GetServicesAsync(BluetoothProtocol.L2CapProtocol, cached);
+
+        // GetServicesAsync returns a list of services defined within a protocol scope.
+        public Task<IEnumerable<Guid>> GetServicesAsync(Guid protocolScope, bool cached)
         {
             List<Guid> services = new List<Guid>();
             WSAQUERYSET qs = new WSAQUERYSET();
@@ -78,8 +83,8 @@ namespace InTheHand.Net.Sockets
             {
                 qs.dwSize = Marshal.SizeOf(qs);
                 qs.lpServiceClassId = Marshal.AllocHGlobal(16);
-                // setting the service class scope to RFComm to exclude other L2CAP services
-                Marshal.Copy(BluetoothProtocol.RFCommProtocol.ToByteArray(), 0, qs.lpServiceClassId, 16);
+                // setting the service class scope to specified protocol scope.
+                Marshal.Copy(protocolScope.ToByteArray(), 0, qs.lpServiceClassId, 16);
                 qs.dwNameSpace = NativeMethods.NS_BTH;
                 qs.dwNumberOfCsAddrs = 0;
                 qs.lpszContext = $"({DeviceAddress:C})";
@@ -103,8 +108,7 @@ namespace InTheHand.Net.Sockets
                         // So we request the raw SDP record in the blob and parse it
                         ServiceRecordParser parser = new ServiceRecordParser();
                         var record = parser.Parse(blob);
-
-                        // well known id which specifies the uuid for the service
+                        
                         var attribute = record.GetAttributeById(UniversalAttributeId.ServiceClassIdList);
                         if (attribute != null)
                         {
@@ -119,7 +123,6 @@ namespace InTheHand.Net.Sockets
                 }
 
                 NativeMethods.WSALookupServiceEnd(lookupHandle);
-
             }
             finally
             {
@@ -170,11 +173,11 @@ namespace InTheHand.Net.Sockets
         /// </summary>
         /// <remarks>Windows caches information about previously seen devices even if not authenticated.</remarks>
         public bool Remembered
-        { 
+        {
             get
             {
                 return _info.fRemembered;
-            } 
+            }
         }
 
         public void Refresh()
