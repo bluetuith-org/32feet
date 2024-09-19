@@ -12,7 +12,6 @@ using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace InTheHand.Net.Sockets
 {
@@ -56,7 +55,7 @@ namespace InTheHand.Net.Sockets
             }
 
             var socketAddressBytes = endPoint.Serialize().ToByteArray();
-            
+
 
             WSAQUERYSET qs = new WSAQUERYSET();
             qs.dwSize = Marshal.SizeOf(qs);

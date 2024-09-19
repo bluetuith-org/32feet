@@ -8,6 +8,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace InTheHand.Net.Bluetooth.Win32
 {
@@ -16,14 +17,16 @@ namespace InTheHand.Net.Bluetooth.Win32
         readonly string _pin;
         IntPtr _handle = IntPtr.Zero;
         readonly NativeMethods.BluetoothAuthenticationCallbackEx _callback;
+        readonly PairRequestCallBackFunc _usercallback = null;
         readonly EventWaitHandle _waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
 
         public ulong Address { get; set; }
 
-        public Win32BluetoothAuthentication(BluetoothAddress address, string pin)
+        public Win32BluetoothAuthentication(BluetoothAddress address, string pin, PairRequestCallBackFunc usercallback = null)
         {
             Address = address;
             _pin = pin;
+            _usercallback = usercallback;
             BLUETOOTH_DEVICE_INFO device = BLUETOOTH_DEVICE_INFO.Create();
             device.Address = address;
             NativeMethods.BluetoothGetDeviceInfo(IntPtr.Zero, ref device);
@@ -50,9 +53,11 @@ namespace InTheHand.Net.Bluetooth.Win32
                             numericComp_passkey = pAuthCallbackParams.Numeric_Value_Passkey
                         };
 
+                        var cbresponse = GetUserCallbackResponse(nresponse.numericComp_passkey.ToString());
                         int result = NativeMethods.BluetoothSendAuthenticationResponseEx(IntPtr.Zero, ref nresponse);
                         System.Diagnostics.Debug.WriteLine($"{result} {nresponse.negativeResponse}");
-                        return result == 0;
+                        cbresponse.Wait();
+                        return cbresponse.Result && result == 0;
 
                     case BluetoothAuthenticationMethod.Legacy:
                         BLUETOOTH_AUTHENTICATE_RESPONSE__PIN_INFO response = new BLUETOOTH_AUTHENTICATE_RESPONSE__PIN_INFO
@@ -64,9 +69,11 @@ namespace InTheHand.Net.Bluetooth.Win32
                         System.Text.Encoding.ASCII.GetBytes(_pin).CopyTo(response.pinInfo.pin, 0);
                         response.pinInfo.pinLength = _pin.Length;
 
+                        var atresponse = GetUserCallbackResponse(_pin);
                         int authResult = NativeMethods.BluetoothSendAuthenticationResponseEx(IntPtr.Zero, ref response);
                         System.Diagnostics.Debug.WriteLine($"BluetoothSendAuthenticationResponseEx: {authResult}");
-                        return authResult == 0;
+                        atresponse.Wait();
+                        return atresponse.Result && authResult == 0;
                 }
 
                 return false;
@@ -77,6 +84,18 @@ namespace InTheHand.Net.Bluetooth.Win32
                 // after one call remove the registration
                 Win32BluetoothSecurity.RemoveRedundantAuthHandler(Address);
             }
+        }
+
+        private Task<bool> GetUserCallbackResponse(string pin)
+        {
+            var t = new Task<bool>(bool () =>
+            {
+                return _usercallback?.Invoke(pin) == true;
+            });
+
+            t.Start();
+
+            return t;
         }
 
         public void WaitOne()
@@ -98,16 +117,16 @@ namespace InTheHand.Net.Bluetooth.Win32
                     // TODO: dispose managed state (managed objects).
                 }
 
-                if(_handle != IntPtr.Zero)
+                if (_handle != IntPtr.Zero)
                     NativeMethods.BluetoothUnregisterAuthentication(_handle);
                 _handle = IntPtr.Zero;
             }
         }
-        
+
         ~Win32BluetoothAuthentication()
         {
-           // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-           Dispose(false);
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(false);
         }
 
         // This code added to correctly implement the disposable pattern.
@@ -140,7 +159,7 @@ namespace InTheHand.Net.Bluetooth.Win32
         internal BLUETOOTH_OOB_DATA_INFO oobInfo;
         internal byte negativeResponse;
     }
-    
+
     [StructLayout(LayoutKind.Sequential, Size = 52)]
     internal struct BLUETOOTH_AUTHENTICATE_RESPONSE__NUMERIC_COMPARISON_PASSKEY_INFO // see above
     {

@@ -16,12 +16,11 @@ using Windows.Devices.Bluetooth.Rfcomm;
 using Windows.Devices.Enumeration;
 using Windows.Networking.Sockets;
 
-namespace InTheHand.Net.Sockets
+namespace InTheHand.Net.Bluetooth.Platforms.Windows
 {
     internal sealed class WindowsBluetoothClient : IBluetoothClient
     {
         private StreamSocket _streamSocket;
-        private bool _authenticate = false;
 
         internal WindowsBluetoothClient() { }
 
@@ -34,34 +33,39 @@ namespace InTheHand.Net.Sockets
         {
             get
             {
-                var t = DeviceInformation.FindAllAsync(BluetoothDevice.GetDeviceSelectorFromPairingState(true));
+                global::Windows.Foundation.IAsyncOperation<DeviceInformationCollection> t = DeviceInformation.FindAllAsync(BluetoothDevice.GetDeviceSelectorFromPairingState(true));
 
-                t.AsTask().ConfigureAwait(false);
+                _ = t.AsTask().ConfigureAwait(false);
                 t.AsTask().Wait();
-                var devices = t.GetResults();
+                DeviceInformationCollection devices = t.GetResults();
 
-                foreach (var device in devices)
+                foreach (DeviceInformation device in devices)
                 {
-                    var td = BluetoothDevice.FromIdAsync(device.Id).AsTask();
+                    Task<BluetoothDevice> td = BluetoothDevice.FromIdAsync(device.Id).AsTask();
                     td.Wait();
-                    var bluetoothDevice = td.Result;
+                    BluetoothDevice bluetoothDevice = td.Result;
                     yield return new BluetoothDeviceInfo(new WindowsBluetoothDeviceInfo(bluetoothDevice));
                 }
             }
         }
 
+        public BluetoothDeviceInfo DiscoverDeviceByAddress(string address, bool issueInquiryIfNotFound)
+        {
+            throw new NotImplementedException();
+        }
+
         public IReadOnlyCollection<BluetoothDeviceInfo> DiscoverDevices(int maxDevices)
         {
-            List<BluetoothDeviceInfo> results = new List<BluetoothDeviceInfo>();
+            List<BluetoothDeviceInfo> results = [];
 
-            var devices = InTheHand.Threading.Tasks.AsyncHelpers.RunSync<DeviceInformationCollection>(async ()=>
+            DeviceInformationCollection devices = Threading.Tasks.AsyncHelpers.RunSync(async () =>
             {
                 return await DeviceInformation.FindAllAsync(BluetoothDevice.GetDeviceSelectorFromPairingState(false));
             });
 
-            foreach (var device in devices)
+            foreach (DeviceInformation device in devices)
             {
-                var bluetoothDevice = InTheHand.Threading.Tasks.AsyncHelpers.RunSync<BluetoothDevice>(async () =>
+                BluetoothDevice bluetoothDevice = Threading.Tasks.AsyncHelpers.RunSync(async () =>
                 {
                     return await BluetoothDevice.FromIdAsync(device.Id);
                 });
@@ -71,11 +75,36 @@ namespace InTheHand.Net.Sockets
         }
 
 #if NET6_0_OR_GREATER
+        public async Task<BluetoothDeviceInfo> DiscoverDeviceByAddressAsync(string address, bool issueInquiryIfNotFound, CancellationToken token)
+        {
+            ulong parsedAddress = BluetoothAddress.Parse(address);
+            BluetoothDevice device = await BluetoothDevice.FromBluetoothAddressAsync(parsedAddress);
+            if (device == null)
+            {
+                if (issueInquiryIfNotFound)
+                {
+                    await foreach (BluetoothDeviceInfo deviceDiscovered in DiscoverDevicesAsync(token))
+                    {
+                        if (device.BluetoothAddress == parsedAddress)
+                        {
+                            return deviceDiscovered;
+                        }
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException($"Device with address {address} is not found");
+                }
+            }
+
+            return new BluetoothDeviceInfo(new WindowsBluetoothDeviceInfo(device));
+        }
+
         public async IAsyncEnumerable<BluetoothDeviceInfo> DiscoverDevicesAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var devices = await DeviceInformation.FindAllAsync(BluetoothDevice.GetDeviceSelectorFromPairingState(false)).AsTask(cancellationToken);
-            
-            foreach(var device in devices)
+            DeviceInformationCollection devices = await DeviceInformation.FindAllAsync(BluetoothDevice.GetDeviceSelectorFromPairingState(false)).AsTask(cancellationToken);
+
+            foreach (DeviceInformation device in devices)
             {
                 yield return new BluetoothDeviceInfo(new WindowsBluetoothDeviceInfo(await BluetoothDevice.FromIdAsync(device.Id)));
             }
@@ -84,20 +113,20 @@ namespace InTheHand.Net.Sockets
 
         public async Task ConnectAsync(BluetoothAddress address, Guid service)
         {
-            var device = await BluetoothDevice.FromBluetoothAddressAsync(address);
-            var rfcommServices = await device.GetRfcommServicesForIdAsync(RfcommServiceId.FromUuid(service), BluetoothCacheMode.Uncached);
+            BluetoothDevice device = await BluetoothDevice.FromBluetoothAddressAsync(address);
+            RfcommDeviceServicesResult rfcommServices = await device.GetRfcommServicesForIdAsync(RfcommServiceId.FromUuid(service), BluetoothCacheMode.Uncached);
 
             if (rfcommServices.Error == BluetoothError.Success)
             {
-                var rfCommService = rfcommServices.Services[0];
+                RfcommDeviceService rfCommService = rfcommServices.Services[0];
                 _streamSocket = new StreamSocket();
-                await _streamSocket.ConnectAsync(rfCommService.ConnectionHostName, rfCommService.ConnectionServiceName, Authenticate ? SocketProtectionLevel.BluetoothEncryptionWithAuthentication : SocketProtectionLevel.BluetoothEncryptionAllowNullAuthentication);
+                await _streamSocket.ConnectAsync(rfCommService.ConnectionHostName, rfCommService.ConnectionServiceName, SocketProtectionLevel.BluetoothEncryptionAllowNullAuthentication);
             }
         }
 
         public void Connect(BluetoothAddress address, Guid service)
         {
-            var t = Task.Run(async () =>
+            Task t = Task.Run(async () =>
             {
                 await ConnectAsync(address, service);
             });
@@ -112,7 +141,9 @@ namespace InTheHand.Net.Sockets
         public void Connect(BluetoothEndPoint remoteEP)
         {
             if (remoteEP == null)
+            {
                 throw new ArgumentNullException(nameof(remoteEP));
+            }
 
             Connect(remoteEP.Address, remoteEP.Service);
         }
@@ -126,52 +157,27 @@ namespace InTheHand.Net.Sockets
             }
         }
 
-        public bool Authenticate { get => _authenticate; set => _authenticate = value; }
+        public bool Authenticate { get; set; } = false;
 
-        Socket IBluetoothClient.Client { get => throw new PlatformNotSupportedException(); }
+        Socket IBluetoothClient.Client => null;
 
-        public bool Connected
-        {
-            get
-            {
-                if (_streamSocket == null)
-                    return false;
-
-                return true;
-            }
-        }
+        public bool Connected => _streamSocket != null;
 
         bool IBluetoothClient.Encrypt { get => false; set => throw new PlatformNotSupportedException(); }
 
         TimeSpan IBluetoothClient.InquiryLength { get => TimeSpan.Zero; set => throw new PlatformNotSupportedException(); }
 
-        public string RemoteMachineName
-        {
-            get
-            {
-                if (Connected)
-                {
-                    return _streamSocket.Information.RemoteHostName.DisplayName;
-                }
-
-                return string.Empty;
-            }
-        }
+        public string RemoteMachineName => Connected ? _streamSocket.Information.RemoteHostName.DisplayName : string.Empty;
 
         public NetworkStream GetStream()
         {
-            if (Connected)
-            {
-                return new WinRTNetworkStream(_streamSocket, true);
-            }
-
-            return null;
+            return Connected ? new WinRTNetworkStream(_streamSocket, true) : (NetworkStream)null;
         }
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!disposedValue)
             {

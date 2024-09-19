@@ -4,13 +4,14 @@
 // 
 // Copyright (c) 2023-24 In The Hand Ltd, All rights reserved.
 // This source code is licensed under the MIT License
-
 namespace InTheHand.Net.Bluetooth
 {
     internal interface IBluetoothSecurity
     {
-        bool PairRequest(BluetoothAddress device, string pin, bool? requireMitmProtection);
+        bool PairRequest(BluetoothAddress device, string pin, bool? requireMitmProtection, PairRequestCallBackFunc usercallback = null);
 
         bool RemoveDevice(BluetoothAddress device);
     }
+
+    public delegate bool PairRequestCallBackFunc(string pin);
 }

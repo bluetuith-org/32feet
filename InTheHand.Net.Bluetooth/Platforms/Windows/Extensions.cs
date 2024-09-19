@@ -7,8 +7,6 @@
 
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
-using Windows.UI.Notifications;
 
 namespace System
 {

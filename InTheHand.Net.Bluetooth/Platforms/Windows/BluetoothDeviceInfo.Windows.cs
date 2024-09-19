@@ -48,15 +48,20 @@ namespace InTheHand.Net.Sockets
 
         public ClassOfDevice ClassOfDevice { get => (ClassOfDevice)NativeDevice.ClassOfDevice.RawValue; }
 
+        public async Task<IEnumerable<Guid>> GetL2CapServicesAsync(bool cached)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<IEnumerable<Guid>> GetRfcommServicesAsync(bool cached)
         {
             List<Guid> services = new List<Guid>();
 
             var servicesResult = await NativeDevice.GetRfcommServicesAsync(cached ? BluetoothCacheMode.Cached : BluetoothCacheMode.Uncached);
 
-            if(servicesResult != null && servicesResult.Error == BluetoothError.Success)
+            if (servicesResult != null && servicesResult.Error == BluetoothError.Success)
             {
-                foreach(var service in servicesResult.Services)
+                foreach (var service in servicesResult.Services)
                 {
                     services.Add(service.ServiceId.Uuid);
                 }

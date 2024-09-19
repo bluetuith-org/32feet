@@ -6,7 +6,6 @@
 // This source code is licensed under the MIT License
 
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Enumeration;
@@ -50,7 +49,7 @@ namespace InTheHand.Net.Bluetooth
             _adapter = adapter;
             _radio = radio;
         }
-        
+
         public string Name { get => _info.Name; }
 
         public BluetoothAddress LocalAddress { get => new BluetoothAddress(_adapter.BluetoothAddress); }
@@ -91,7 +90,7 @@ namespace InTheHand.Net.Bluetooth
                 {
                     return BluetoothVersion.Version40;
                 }
-                
+
                 return BluetoothVersion.Version21;
             }
         }

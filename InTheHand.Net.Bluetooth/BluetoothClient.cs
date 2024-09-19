@@ -5,7 +5,6 @@
 // Copyright (c) 2003-2024 In The Hand Ltd, All rights reserved.
 // This source code is licensed under the MIT License
 
-using InTheHand.Net.Bluetooth;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,7 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace InTheHand.Net.Sockets
+namespace InTheHand.Net.Bluetooth
 {
     /// <summary>
     /// Provides client connections for Bluetooth Rfcomm network services.
@@ -48,7 +47,9 @@ namespace InTheHand.Net.Sockets
             }
 #endif
             if (_bluetoothClient == null)
+            {
                 throw new PlatformNotSupportedException();
+            }
         }
 
         internal BluetoothClient(IBluetoothClient client)
@@ -59,13 +60,7 @@ namespace InTheHand.Net.Sockets
         /// <summary>
         /// Returns a collection of paired devices.
         /// </summary>
-        public IEnumerable<BluetoothDeviceInfo> PairedDevices
-        {
-            get
-            {
-                return _bluetoothClient.PairedDevices;
-            }
-        }
+        public IEnumerable<BluetoothDeviceInfo> PairedDevices => _bluetoothClient.PairedDevices;
 
         public BluetoothDeviceInfo DiscoverDeviceByAddress(string address, bool issueInquiryIfNotFound)
         {
@@ -91,6 +86,10 @@ namespace InTheHand.Net.Sockets
         }
 
 #if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+        public async Task<BluetoothDeviceInfo> DiscoverDeviceByAddressAsync(string address, bool issueInquiryIfNotFound, CancellationToken token)
+        {
+            return await _bluetoothClient.DiscoverDeviceByAddressAsync(address, issueInquiryIfNotFound, token);
+        }
         public IAsyncEnumerable<BluetoothDeviceInfo> DiscoverDevicesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             return _bluetoothClient.DiscoverDevicesAsync(cancellationToken);
@@ -114,7 +113,9 @@ namespace InTheHand.Net.Sockets
         public void Connect(BluetoothEndPoint remoteEP)
         {
             if (remoteEP == null)
+            {
                 throw new ArgumentNullException(nameof(remoteEP));
+            }
 
             _bluetoothClient.Connect(remoteEP);
         }
@@ -207,7 +208,10 @@ namespace InTheHand.Net.Sockets
         /// </summary>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public NetworkStream GetStream() => _bluetoothClient.GetStream();
+        public NetworkStream GetStream()
+        {
+            return _bluetoothClient.GetStream();
+        }
 
         /// <summary>
         /// Closes the BluetoothClient and the underlying connection.
