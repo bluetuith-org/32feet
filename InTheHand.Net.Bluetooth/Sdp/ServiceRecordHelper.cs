@@ -6,10 +6,10 @@
 // Copyright (c) 2003-2020 In The Hand Ltd, All rights reserved.
 // This source code is licensed under the MIT License
 
+using InTheHand.Net.Bluetooth.AttributeIds;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using InTheHand.Net.Bluetooth.AttributeIds;
 using System.Globalization;
 
 namespace InTheHand.Net.Bluetooth.Sdp

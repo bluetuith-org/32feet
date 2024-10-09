@@ -250,7 +250,7 @@ namespace InTheHand.Net
             {
                 Debug.Write(sa[i].ToString("X2"));
             }
-            
+
             Debug.WriteLine(string.Empty);
             Debug.Unindent();
         }

@@ -233,12 +233,16 @@ namespace InTheHand.Net.Bluetooth.Sdp
         {
             // Throw a more specific error about the params array when the value is null.
             // As error would be thrown by SetValue, but we can report a more helpful message.
-            if (childElements == null) {
+            if (childElements == null)
+            {
                 // Caller passed a literal null, so could be aiming for other ElementType
                 // so can't complain that we need to be a Seq/Alt type.
-            } else {
+            }
+            else
+            {
                 //
-                if (typePassThru != ElementType.ElementSequence && typePassThru != ElementType.ElementAlternative) {
+                if (typePassThru != ElementType.ElementSequence && typePassThru != ElementType.ElementAlternative)
+                {
                     throw new ArgumentException(ErrorMsgSeqAltTypeNeedElementArray);
                 }
             }
@@ -264,34 +268,53 @@ namespace InTheHand.Net.Bluetooth.Sdp
             ElementTypeDescriptor etd = m_etd;
             ElementType type = m_type;
             //
-            if (value == null) {
-                if (etd == ElementTypeDescriptor.ElementSequence || etd == ElementTypeDescriptor.ElementAlternative) {
+            if (value == null)
+            {
+                if (etd == ElementTypeDescriptor.ElementSequence || etd == ElementTypeDescriptor.ElementAlternative)
+                {
                     throw new ArgumentNullException("value", "Type DataElementSequence and DataElementAlternative need an list of AttributeValue.");
-                } else if (etd == ElementTypeDescriptor.Nil) {
-                } else if (etd == ElementTypeDescriptor.Unknown) {
-                } else {
+                }
+                else if (etd == ElementTypeDescriptor.Nil)
+                {
+                }
+                else if (etd == ElementTypeDescriptor.Unknown)
+                {
+                }
+                else
+                {
                     throw new ArgumentNullException("value", "Null not valid for type: '" + type + "'.");
                 }
-            } else {
+            }
+            else
+            {
                 // Check iff type=seq/alt then value is IList<ServiceElement>
 
                 IList<ServiceElement> asElementList = value as IList<ServiceElement>;
 
-                if (etd == ElementTypeDescriptor.ElementSequence || etd == ElementTypeDescriptor.ElementAlternative) {
-                    if (asElementList == null) {
+                if (etd == ElementTypeDescriptor.ElementSequence || etd == ElementTypeDescriptor.ElementAlternative)
+                {
+                    if (asElementList == null)
+                    {
                         throw new ArgumentException("Type ElementSequence and ElementAlternative need an list of ServiceElement.");
                     }
-                } else {
-                    if (asElementList != null) {
+                }
+                else
+                {
+                    if (asElementList != null)
+                    {
                         throw new ArgumentException("Type ElementSequence and ElementAlternative must be used for an list of ServiceElement.");
                     }
                 }
                 //--------
                 bool validTypeForType;
-                if (type == ElementType.Nil) {
+                if (type == ElementType.Nil)
+                {
                     validTypeForType = value == null;
-                } else if (etd == ElementTypeDescriptor.UnsignedInteger || etd == ElementTypeDescriptor.TwosComplementInteger) {
-                    switch (type) {
+                }
+                else if (etd == ElementTypeDescriptor.UnsignedInteger || etd == ElementTypeDescriptor.TwosComplementInteger)
+                {
+                    switch (type)
+                    {
                         case ElementType.UInt8:
                             validTypeForType = value is byte;
                             break;
@@ -320,9 +343,12 @@ namespace InTheHand.Net.Bluetooth.Sdp
                         case ElementType.Int128:
                             const int NumBytesIn128bits = 16;
                             byte[] arr = value as byte[];
-                            if (arr != null && arr.Length == NumBytesIn128bits) {
+                            if (arr != null && arr.Length == NumBytesIn128bits)
+                            {
                                 validTypeForType = true;
-                            } else { // HACK UNTESTED
+                            }
+                            else
+                            { // HACK UNTESTED
                                 validTypeForType = false;
                                 throw new ArgumentException(
                                     "Element type '" + type + "' needs a length 16 byte array.");
@@ -333,30 +359,45 @@ namespace InTheHand.Net.Bluetooth.Sdp
                             validTypeForType = false;
                             break;
                     }//switch
-                } else if (type == ElementType.Uuid16) {
+                }
+                else if (type == ElementType.Uuid16)
+                {
                     validTypeForType = value is ushort;
                     validTypeForType = value is ushort;
-                } else if (type == ElementType.Uuid32) {
+                }
+                else if (type == ElementType.Uuid32)
+                {
                     validTypeForType
                         = value is UInt16
                         || value is Int16
                         || value is UInt32
                         || value is Int32
                         ;
-                } else if (type == ElementType.Uuid128) {
+                }
+                else if (type == ElementType.Uuid128)
+                {
                     validTypeForType = value is Guid;
-                } else if (type == ElementType.TextString) {
+                }
+                else if (type == ElementType.TextString)
+                {
                     validTypeForType = value is byte[] || value is String;
-                } else if (type == ElementType.Boolean) {
+                }
+                else if (type == ElementType.Boolean)
+                {
                     validTypeForType = value is bool;
-                } else if (type == ElementType.ElementSequence || type == ElementType.ElementAlternative) {
+                }
+                else if (type == ElementType.ElementSequence || type == ElementType.ElementAlternative)
+                {
                     validTypeForType = asElementList != null;
-                } else {
+                }
+                else
+                {
                     // if (type == ElementType.Url)
                     System.Diagnostics.Debug.Assert(type == ElementType.Url);
                     validTypeForType = value is byte[] || value is Uri || value is string;
                 }
-                if (!validTypeForType) {
+                if (!validTypeForType)
+                {
                     throw new ArgumentException("CLR type '" + value.GetType().Name + "' not valid type for element type '" + type + "'.");
                 }
             }
@@ -438,9 +479,10 @@ namespace InTheHand.Net.Bluetooth.Sdp
         {
             ElementTypeDescriptor etd = GetEtdForType(elementType);
             if (!(etd == ElementTypeDescriptor.UnsignedInteger
-                   || etd == ElementTypeDescriptor.TwosComplementInteger)) {
+                   || etd == ElementTypeDescriptor.TwosComplementInteger))
+            {
                 throw new ArgumentException(string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                    ErrorMsgFmtCreateNumericalGivenNonNumber, 
+                    ErrorMsgFmtCreateNumericalGivenNonNumber,
                     etd/*, (int)etd, elementType, (int)elementType*/));
             }
             object valueConverted = ConvertNumericalValue(elementType, value);
@@ -454,11 +496,14 @@ namespace InTheHand.Net.Bluetooth.Sdp
             //
             if (value is byte || value is Int16 || value is Int32 || value is Int64
                 || value is sbyte || value is UInt16 || value is UInt32 || value is UInt64
-                || value is Enum) {
-                try {
+                || value is Enum)
+            {
+                try
+                {
                     IConvertible cble = (IConvertible)value;
                     IFormatProvider fp = System.Globalization.CultureInfo.InvariantCulture;
-                    switch (elementType) {
+                    switch (elementType)
+                    {
                         case ElementType.UInt8:
                             naturalTypedValue = cble.ToByte(fp);
                             break;
@@ -490,12 +535,16 @@ namespace InTheHand.Net.Bluetooth.Sdp
                             break;
                     }
                     return naturalTypedValue;
-                } catch (OverflowException ex) {
+                }
+                catch (OverflowException ex)
+                {
                     innerEx = ex;
                     //} catch (InvalidCastException ex) {
                     //    innerEx = ex;
                 }
-            } else {
+            }
+            else
+            {
                 innerEx = null;
             }
             throw ServiceRecordParser.new_ArgumentOutOfRangeException(
@@ -560,7 +609,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
 #endif
         public IList<ServiceElement> GetValueAsElementList()
         {
-            if (m_etd != ElementTypeDescriptor.ElementSequence && m_etd != ElementTypeDescriptor.ElementAlternative) {
+            if (m_etd != ElementTypeDescriptor.ElementSequence && m_etd != ElementTypeDescriptor.ElementAlternative)
+            {
                 throw new InvalidOperationException(ErrorMsgNotSeqAltType);
             }
             // #ctor disallows null value for seq/alt.
@@ -635,17 +685,22 @@ namespace InTheHand.Net.Bluetooth.Sdp
 #endif
         public Uri GetValueAsUri()
         {
-            if (m_type != ElementType.Url) {
+            if (m_type != ElementType.Url)
+            {
                 throw new InvalidOperationException(ErrorMsgNotUrlType);
             }
             System.Diagnostics.Debug.Assert(m_rawValue != null);
             Uri asUri = m_rawValue as Uri;
-            if (asUri == null) {
+            if (asUri == null)
+            {
                 var arr = m_rawValue as byte[];
                 string str;
-                if (arr != null) {
+                if (arr != null)
+                {
                     str = ServiceRecordParser.CreateUriStringFromBytes(arr);
-                } else {
+                }
+                else
+                {
                     str = (string)m_rawValue;
                 }
                 asUri = new Uri(str);
@@ -671,18 +726,24 @@ namespace InTheHand.Net.Bluetooth.Sdp
 #endif
         public Guid GetValueAsUuid()
         {
-            if (m_etd != ElementTypeDescriptor.Uuid) {
+            if (m_etd != ElementTypeDescriptor.Uuid)
+            {
                 throw new InvalidOperationException(ErrorMsgNotUuidType);
             }
             //
             Guid result;
-            if (m_type == ElementType.Uuid16) {
+            if (m_type == ElementType.Uuid16)
+            {
                 result = BluetoothService.CreateBluetoothUuid((UInt16)Value);
                 return result;
-            } else if (m_type == ElementType.Uuid32) {
+            }
+            else if (m_type == ElementType.Uuid32)
+            {
                 result = BluetoothService.CreateBluetoothUuid((UInt32)Value);
                 return result;
-            } else {
+            }
+            else
+            {
                 return (Guid)Value;
             }
         }
@@ -713,21 +774,25 @@ namespace InTheHand.Net.Bluetooth.Sdp
         /// </exception>
         public string GetValueAsString(Encoding encoding)
         {
-            if (encoding == null) {
+            if (encoding == null)
+            {
                 throw new ArgumentNullException("encoding");
             }
-            if (m_type != ElementType.TextString) {
+            if (m_type != ElementType.TextString)
+            {
                 throw new InvalidOperationException(ErrorMsgNotTextStringType);
             }
             //
             string stringAsStored = m_rawValue as string;
-            if (stringAsStored != null) {
+            if (stringAsStored != null)
+            {
                 return stringAsStored;
             }
             //
             byte[] rawBytes = (byte[])m_rawValue;
             string str = encoding.GetString(rawBytes, 0, rawBytes.Length);
-            if (str.Length > 0 && str[str.Length - 1] == 0) { // dodgy null-termination
+            if (str.Length > 0 && str[str.Length - 1] == 0)
+            { // dodgy null-termination
                 str = str.Substring(0, str.Length - 1);
             }
             return str;
@@ -760,12 +825,14 @@ namespace InTheHand.Net.Bluetooth.Sdp
         /// </exception>
         public string GetValueAsString(LanguageBaseItem languageBase)
         {
-            if (languageBase == null) {
+            if (languageBase == null)
+            {
                 throw new ArgumentNullException("languageBase");
             }
             Encoding enc = languageBase.GetEncoding();
 
-            if (_strictStringDecoding) {
+            if (_strictStringDecoding)
+            {
                 enc = (Encoding)enc.Clone(); //not in NETCFv1
 #if !UAP
                 enc.DecoderFallback = new DecoderExceptionFallback(); // not in NETCF.
