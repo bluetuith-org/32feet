@@ -27,7 +27,7 @@ namespace InTheHand.Net.Sockets
             Debug.Assert(s.Connected);
             return s;
         }
-    
+
     }//class
 
     internal sealed class SocketPair

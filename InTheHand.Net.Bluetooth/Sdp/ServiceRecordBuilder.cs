@@ -5,13 +5,13 @@
 // Copyright (c) 2003-2022 In The Hand Ltd, All rights reserved.
 // This source code is licensed under the MIT License
 
-using System;
 using InTheHand.Net.Bluetooth.AttributeIds;
+using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 
 namespace InTheHand.Net.Bluetooth.Sdp
@@ -103,7 +103,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
                         BuildServiceClassIdList())));
                 // -- PDL --
                 ServiceElement pdl;
-                switch (m_ProtocolType) {
+                switch (m_ProtocolType)
+                {
                     case BluetoothProtocolDescriptorType.L2Cap:
                         pdl = ServiceRecordHelper.CreateL2CapProtocolDescriptorList();
                         break;
@@ -122,35 +123,41 @@ namespace InTheHand.Net.Bluetooth.Sdp
                 if (pdl != null)
                     attrList.Add(new ServiceAttribute(UniversalAttributeId.ProtocolDescriptorList, pdl));
                 // -- Strings --
-                if (m_ServiceName != null) {
+                if (m_ServiceName != null)
+                {
                     attrList.Add(new ServiceAttribute(
                         UniversalAttributeId.ServiceName
                             + (int)LanguageBaseItem.PrimaryLanguageBaseAttributeId,
                         new ServiceElement(ElementType.TextString, m_ServiceName)));
                     needsLangBaseId = true;
                 }
-                if (m_ProviderName != null) {
+                if (m_ProviderName != null)
+                {
                     attrList.Add(new ServiceAttribute(
                         UniversalAttributeId.ProviderName
                             + (int)LanguageBaseItem.PrimaryLanguageBaseAttributeId,
                         new ServiceElement(ElementType.TextString, m_ProviderName)));
                     needsLangBaseId = true;
                 }
-                if (m_ServiceDescription != null) {
+                if (m_ServiceDescription != null)
+                {
                     attrList.Add(new ServiceAttribute(
                         UniversalAttributeId.ServiceDescription
                             + (int)LanguageBaseItem.PrimaryLanguageBaseAttributeId,
                         new ServiceElement(ElementType.TextString, m_ServiceDescription)));
                     needsLangBaseId = true;
                 }
-                if (needsLangBaseId) {
+                if (needsLangBaseId)
+                {
                     attrList.Add(new ServiceAttribute(UniversalAttributeId.LanguageBaseAttributeIdList,
                         CreateEnglishUtf8PrimaryLanguageServiceElement()));
                 }
                 // -- BtPDL --
-                if (m_profileDescrs.Count != 0) {
+                if (m_profileDescrs.Count != 0)
+                {
                     System.Collections.ArrayList items = new System.Collections.ArrayList();
-                    foreach (BtPdlItem cur in m_profileDescrs) {
+                    foreach (BtPdlItem cur in m_profileDescrs)
+                    {
                         ServiceElement item = new ServiceElement(ElementType.ElementSequence,
                             ServiceElementFromUuid(cur.m_classId),
                             new ServiceElement(ElementType.UInt16,
@@ -165,11 +172,13 @@ namespace InTheHand.Net.Bluetooth.Sdp
                 // -- Custom --
                 attrList.AddRange(m_customList);
                 // -- Create! --
-                if (!m_allowDuplicates) {
+                if (!m_allowDuplicates)
+                {
                     ReportIfDuplicates(attrList, true);
                 }
 
-                attrList.Sort(delegate(ServiceAttribute x, ServiceAttribute y) {
+                attrList.Sort(delegate (ServiceAttribute x, ServiceAttribute y)
+                {
                     int r = x.IdAsOrdinalNumber.CompareTo(y.IdAsOrdinalNumber);
                     return r;
                 });
@@ -192,8 +201,10 @@ namespace InTheHand.Net.Bluetooth.Sdp
             Dictionary<ServiceAttributeId, ServiceAttribute> ids
                 = new Dictionary<ServiceAttributeId, ServiceAttribute>(list.Count);
 
-            foreach (ServiceAttribute cur in list) {
-                if (ids.ContainsKey(cur.Id)) {
+            foreach (ServiceAttribute cur in list)
+            {
+                if (ids.ContainsKey(cur.Id))
+                {
                     if (storedList)
                         throw new InvalidOperationException(ErrorMsg_Duplicate);
                     else
@@ -206,10 +217,12 @@ namespace InTheHand.Net.Bluetooth.Sdp
         private List<ServiceElement> BuildServiceClassIdList()
         {
             List<ServiceElement> children = new List<ServiceElement>();
-            if (m_classIds.Count == 0) {
+            if (m_classIds.Count == 0)
+            {
                 throw new InvalidOperationException(ErrorMsg_NoServiceClasses);
             }
-            foreach (object classRaw in m_classIds) {
+            foreach (object classRaw in m_classIds)
+            {
                 children.Add(ServiceElementFromUuid(classRaw));
             }//foreach/m_classes
             return children;
@@ -223,16 +236,22 @@ namespace InTheHand.Net.Bluetooth.Sdp
             bool writeIntegral;
             // First check raw type, and also if u16/u32 inside Guid.
             // If Guid write it, otherwise handle all integral value.
-            if (classRaw is Guid) {
+            if (classRaw is Guid)
+            {
                 Guid uuid128 = (Guid)classRaw;
-                if (ServiceRecordUtilities.IsUuid32Value(uuid128)) {
+                if (ServiceRecordUtilities.IsUuid32Value(uuid128))
+                {
                     classU32 = ServiceRecordUtilities.GetAsUuid32Value(uuid128);
                     writeIntegral = true;
-                } else {
+                }
+                else
+                {
                     tmp = new ServiceElement(ElementType.Uuid128, uuid128);
                     writeIntegral = false;
                 }
-            } else {
+            }
+            else
+            {
                 System.Diagnostics.Debug.Assert(classRaw != null,
                     "Unexpected ServiceClassId value: null");
                 System.Diagnostics.Debug.Assert(classRaw is Int32,
@@ -241,12 +260,16 @@ namespace InTheHand.Net.Bluetooth.Sdp
                 classU32 = unchecked((UInt32)i32);
                 writeIntegral = true;
             }
-            if (writeIntegral) {
-                try {
+            if (writeIntegral)
+            {
+                try
+                {
                     UInt16 u16 = Convert.ToUInt16(classU32);
                     Debug.Assert(classU32 <= UInt16.MaxValue, "NOT replace the throw, LTE");
                     tmp = new ServiceElement(ElementType.Uuid16, u16);
-                } catch (OverflowException) {
+                }
+                catch (OverflowException)
+                {
                     Debug.Assert(classU32 > UInt16.MaxValue, "NOT replace the throw, GT");
                     tmp = new ServiceElement(ElementType.Uuid32, classU32);
                 }
@@ -474,7 +497,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         {
             List<ServiceAttribute> newList = new List<ServiceAttribute>(m_customList);
             newList.AddRange(serviceAttributes);
-            if (!m_allowDuplicates) {
+            if (!m_allowDuplicates)
+            {
                 ReportIfDuplicates(newList, false);
             }
             m_customList = newList;
@@ -492,13 +516,15 @@ namespace InTheHand.Net.Bluetooth.Sdp
         {
             List<ServiceAttribute> newList = new List<ServiceAttribute>(m_customList);
             // Have to verify the type of each element.
-            foreach (object cur in serviceAttributes) {
+            foreach (object cur in serviceAttributes)
+            {
                 var sa = cur as ServiceAttribute;
                 if (sa == null)
                     throw new ArgumentException("Every item in the list must be a ServiceAttribute");
                 newList.Add(sa);
             }
-            if (!m_allowDuplicates) {
+            if (!m_allowDuplicates)
+            {
                 ReportIfDuplicates(newList, false);
             }
             m_customList = newList;
@@ -554,9 +580,12 @@ namespace InTheHand.Net.Bluetooth.Sdp
             ServiceElement e;
             ElementTypeDescriptor etd = ServiceRecordParser.GetEtdForType(elementType);
             if ((etd == ElementTypeDescriptor.UnsignedInteger
-                   || etd == ElementTypeDescriptor.TwosComplementInteger)) {
+                   || etd == ElementTypeDescriptor.TwosComplementInteger))
+            {
                 e = ServiceElement.CreateNumericalServiceElement(elementType, value);
-            } else {
+            }
+            else
+            {
                 e = new ServiceElement(elementType, value);
             }
             this.AddCustomAttribute(new ServiceAttribute(id, e));
@@ -629,7 +658,7 @@ namespace InTheHand.Net.Bluetooth.Sdp
                 = @"^([a-z0-9]+)"  //scheme
                 + "://localhost:"
                 + "([0-9a-fA-F]{32})"   //uuid
-                //param(s)
+                                        //param(s)
                 + "(?:;([a-zA-Z]+)=([a-zA-Z0-9"
                 + " " // space
                 + "_" //underscore
@@ -644,7 +673,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             string scheme = match.Groups[1].Value;
             string classId = match.Groups[2].Value;
             //
-            switch (scheme) {
+            switch (scheme)
+            {
                 case "btl2cap":
                     bldr.ProtocolType = BluetoothProtocolDescriptorType.L2Cap;
                     break;
@@ -661,8 +691,10 @@ namespace InTheHand.Net.Bluetooth.Sdp
             Guid guid = new Guid(classId);
             bldr.AddServiceClass(guid);
             //
-            for (int i = 3; i < match.Groups.Count; i += 2) {
-                if ("NAME".Equals(match.Groups[i].Value.ToUpper(CultureInfo.InvariantCulture))) {
+            for (int i = 3; i < match.Groups.Count; i += 2)
+            {
+                if ("NAME".Equals(match.Groups[i].Value.ToUpper(CultureInfo.InvariantCulture)))
+                {
                     bldr.ServiceName = match.Groups[i + 1].Value;
                 }
             }

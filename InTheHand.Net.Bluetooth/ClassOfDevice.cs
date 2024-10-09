@@ -45,7 +45,7 @@ namespace InTheHand.Net.Bluetooth
         {
             _cod = cod;
         }
-        
+
         public static implicit operator uint(ClassOfDevice cod)
         {
             if (cod == null)
@@ -120,7 +120,7 @@ namespace InTheHand.Net.Bluetooth
         /// Gets the numerical value, suitable for CLS Compliance.
         /// </summary>
         /// <seealso cref="P:InTheHand.Net.Bluetooth.ClassOfDevice.Value"/>
-        [Obsolete("Use the UInt32 value",true)]
+        [Obsolete("Use the UInt32 value", true)]
         [DebuggerHidden]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public int ValueAsInt32

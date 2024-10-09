@@ -45,17 +45,17 @@ namespace InTheHand.Net.Sockets
 
         public void Stop()
         {
-            if(Active)
+            if (Active)
             {
-                if(provider != null)
+                if (provider != null)
                 {
                     provider.StopAdvertising();
                     provider = null;
                 }
 
-                if(listener != null)
+                if (listener != null)
                 {
-                    listener.ConnectionReceived-=Listener_ConnectionReceived;
+                    listener.ConnectionReceived -= Listener_ConnectionReceived;
                     listener.Dispose();
                     listener = null;
                 }
@@ -72,7 +72,7 @@ namespace InTheHand.Net.Sockets
 
         public BluetoothClient AcceptBluetoothClient()
         {
-            if(listener != null)
+            if (listener != null)
             {
                 listenHandle.WaitOne();
                 pending = false;

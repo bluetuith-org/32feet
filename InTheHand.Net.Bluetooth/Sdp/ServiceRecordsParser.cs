@@ -72,7 +72,7 @@ namespace InTheHand.Net.Bluetooth.Sdp
         {
             get; set;
         }
-        	
+
         //--------------------------------------------------------------
         // Methods
         //--------------------------------------------------------------
@@ -140,19 +140,22 @@ namespace InTheHand.Net.Bluetooth.Sdp
             if (buffer == null) { throw new ArgumentNullException("buffer"); }
             if (length <= 0) { throw new_ArgumentOutOfRangeException("buffer", ErrorMsgServiceRecordBytesZeroLength); }
             if (offset < 0) { throw new ArgumentOutOfRangeException("offset"); }
-            if ((buffer.Length - offset) < length) {
+            if ((buffer.Length - offset) < length)
+            {
                 throw new ArgumentException("offset is past the end of the data.");
             }
             //
             ElementTypeDescriptor etd;
             System.Diagnostics.Debug.Assert(length >= 1); //is checked above!
             etd = GetElementTypeDescriptor(buffer[offset]);
-            if (etd != ElementTypeDescriptor.ElementSequence) {
+            if (etd != ElementTypeDescriptor.ElementSequence)
+            {
                 throw CreateInvalidException(ErrorMsgTopElementNotSequence, offset);
             }
             //
             int elementLength = GetElementLength(buffer, offset, length, out int contentOffset, out int contentLength);
-            if (elementLength > length) {
+            if (elementLength > length)
+            {
                 throw CreateInvalidExceptionOverruns(offset, elementLength, length);
             }
 
@@ -165,7 +168,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             //}
             //
             ServiceRecord result = new ServiceRecord(children);
-            if (offset == 0) {
+            if (offset == 0)
+            {
                 result.SetSourceBytes(buffer);
                 //TODO Set the source bytes on the record in the case where they're offset in the buffer.
             }
@@ -179,7 +183,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             ElementTypeDescriptor etd = GetElementTypeDescriptor(buffer[offset]);
             bool goodIdType = (etd == ElementTypeDescriptor.UnsignedInteger /*|| etd == ElementTypeDescriptor.TwosComplementInteger*/);
             goodIdType = goodIdType && (contentLength == 2);
-            if (!goodIdType) {
+            if (!goodIdType)
+            {
                 throw CreateInvalidException(ErrorMsgAttributePairFirstMustUint16, offset);
 
             }
@@ -201,7 +206,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
             SplitHeaderByte(buffer[offset], out ElementTypeDescriptor etd, out SizeIndex sizeIndex);
             VerifyAllowedSizeIndex(etd, sizeIndex, m_allowAnySizeForUnknownTypeDescriptorElements);
             readLength = GetElementLength(buffer, offset, length, out int contentOffset, out int contentLength);
-            if (readLength > length) {
+            if (readLength > length)
+            {
                 throw CreateInvalidExceptionOverruns(offset, readLength, length);
             }
             object rawValue = null;
@@ -211,69 +217,103 @@ namespace InTheHand.Net.Bluetooth.Sdp
             // 'unknown' element depending on the settings.
             ElementType type = ElementType.Unknown;
             // -- Parse --
-            if (etd == ElementTypeDescriptor.Nil) { //----------------
+            if (etd == ElementTypeDescriptor.Nil)
+            { //----------------
                 type = ElementType.Nil;
                 rawValue = null;
-            } else if (etd == ElementTypeDescriptor.UnsignedInteger
-                        || etd == ElementTypeDescriptor.TwosComplementInteger) { //----------------
-                if (contentLength == 1) {
+            }
+            else if (etd == ElementTypeDescriptor.UnsignedInteger
+                        || etd == ElementTypeDescriptor.TwosComplementInteger)
+            { //----------------
+                if (contentLength == 1)
+                {
                     Byte valueU8 = ReadElementUInt8(buffer, offset, length, out readLength);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt8;
                         rawValue = valueU8;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int8;
                         rawValue = unchecked((SByte)valueU8);
                     }
-                } else if (contentLength == 2) {
+                }
+                else if (contentLength == 2)
+                {
                     ushort valueU16 = ReadElementUInt16(buffer, offset, length, out readLength);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt16;
                         rawValue = valueU16;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int16;
                         rawValue = unchecked((short)valueU16);
                     }
-                } else if (contentLength == 4) {
+                }
+                else if (contentLength == 4)
+                {
                     uint valueU32 = ReadElementUInt32(buffer, offset, length, out readLength);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt32;
                         rawValue = valueU32;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int32;
                         rawValue = unchecked((int)valueU32);
                     }
-                } else if (contentLength == 8) {
+                }
+                else if (contentLength == 8)
+                {
                     ulong valueU64 = ReadElementUInt64(buffer, offset, length, out readLength);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt64;
                         rawValue = valueU64;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int64;
                         rawValue = unchecked((long)valueU64);
                     }
-                } else if (contentLength == 16) {
+                }
+                else if (contentLength == 16)
+                {
                     byte[] valueArr128 = ReadArrayContent(buffer, offset, length, out readLength);
                     Debug.Assert(readLength == 17, "but readLength is : " + readLength);
                     Debug.Assert(valueArr128.Length == 16, "but valueArr128.Length is : " + valueArr128.Length);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt128;
                         rawValue = valueArr128;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int128;
                         rawValue = valueArr128;
                     }
                 }
-            } else if (etd == ElementTypeDescriptor.Uuid) { //----------------
-                if (contentLength == 2) {
+            }
+            else if (etd == ElementTypeDescriptor.Uuid)
+            { //----------------
+                if (contentLength == 2)
+                {
                     ushort valueU16 = ReadFieldUInt16(buffer, offset + contentOffset, length - contentOffset);
                     type = ElementType.Uuid16;
                     rawValue = valueU16;
-                } else if (contentLength == 4) {
+                }
+                else if (contentLength == 4)
+                {
                     uint valueU32 = ReadFieldUInt32(buffer, offset + contentOffset, length - contentOffset);
                     type = ElementType.Uuid32;
                     rawValue = valueU32;
-                } else if (contentLength == 16) {
+                }
+                else if (contentLength == 16)
+                {
                     offset += contentOffset;
                     Guid guidValue = new Guid(
                         // NETCF doesn't have #ctor(uint, ushort, ...) overload.
@@ -291,14 +331,18 @@ namespace InTheHand.Net.Bluetooth.Sdp
                     type = ElementType.Uuid128;
                     rawValue = guidValue;
                 }
-            } else if (etd == ElementTypeDescriptor.Boolean) { //----------------
+            }
+            else if (etd == ElementTypeDescriptor.Boolean)
+            { //----------------
                 Debug.Assert(contentLength == 1);
                 byte valueU8 = ReadFieldUInt8(buffer, offset + contentOffset, length - contentOffset);
                 bool valueBoolean = valueU8 != 0;
                 rawValue = valueBoolean;
                 type = ElementType.Boolean;
-            } else if (etd == ElementTypeDescriptor.ElementSequence
-                    || etd == ElementTypeDescriptor.ElementAlternative) {
+            }
+            else if (etd == ElementTypeDescriptor.ElementSequence
+                    || etd == ElementTypeDescriptor.ElementAlternative)
+            {
 
                 List<ServiceElement> children = new List<ServiceElement>();
                 SequenceItemParser<ServiceElement> itemParser = ParseInternal;
@@ -307,17 +351,24 @@ namespace InTheHand.Net.Bluetooth.Sdp
                 type = (etd == ElementTypeDescriptor.ElementSequence)
                     ? ElementType.ElementSequence : ElementType.ElementAlternative;
                 rawValue = children;
-            } else if (etd == ElementTypeDescriptor.Url) { //----------------
+            }
+            else if (etd == ElementTypeDescriptor.Url)
+            { //----------------
                 byte[] valueArray = ReadArrayContent(buffer, offset, length, out int myReadLength);
                 Debug.Assert(myReadLength == readLength);
-                if (LazyUrlCreation) {
+                if (LazyUrlCreation)
+                {
                     rawValue = valueArray;
-                } else {
+                }
+                else
+                {
                     string valueUri = CreateUriStringFromBytes(valueArray);
                     rawValue = valueUri;
                 }
                 type = ElementType.Url;
-            } else if (etd == ElementTypeDescriptor.TextString) { //----------------
+            }
+            else if (etd == ElementTypeDescriptor.TextString)
+            { //----------------
                 byte[] valueArray = ReadArrayContent(buffer, offset, length, out int myReadLength);
                 Debug.Assert(myReadLength == readLength);
                 type = ElementType.TextString;
@@ -325,16 +376,20 @@ namespace InTheHand.Net.Bluetooth.Sdp
             }
             // --------
             // Use parse result (or lack of!).
-            if (type == ElementType.Unknown) {
+            if (type == ElementType.Unknown)
+            {
                 // If we haven't handled the type, we'll end-up here.
                 string msg = "Element type: " + etd + ", SizeIndex: " + sizeIndex + ", at offset: " + offset + ".";
-                if (SkipUnhandledElementTypes) {
+                if (SkipUnhandledElementTypes)
+                {
                     type = ElementType.Unknown;
                     etd = ElementTypeDescriptor.Unknown;
                     rawValue = null;
                     Debug.WriteLine(
                         "Unhandled SDP Parse " + msg);
-                } else {
+                }
+                else
+                {
                     throw new_NotImplementedException(msg);
                 }
             }
@@ -364,7 +419,7 @@ namespace InTheHand.Net.Bluetooth.Sdp
             Debug.Assert(!(elementLength != length), "Given length is not equal to the Seq/Alt length field.");
             //
             int curOffset = offset + contentOffset;
-            while (curOffset < offset + length && curContentLength > 0) 
+            while (curOffset < offset + length && curContentLength > 0)
             {
                 T child = itemParser(buffer, curOffset, curContentLength, out int readLength);
                 children.Add(child);
@@ -412,10 +467,12 @@ namespace InTheHand.Net.Bluetooth.Sdp
         /// </exception>
         public static byte[][] SplitSearchAttributeResult(byte[] multiRecord)
         {
-            if (multiRecord == null) {
+            if (multiRecord == null)
+            {
                 throw new ArgumentNullException("multiRecord");
             }
-            if (multiRecord.Length == 0) {
+            if (multiRecord.Length == 0)
+            {
                 // Should we error here?  We handle the zero element case below 
                 // (where the input array is 0x35 0x00 etc).  So the caller likely 
                 // made an error in passing a totally empty array...
@@ -429,12 +486,14 @@ namespace InTheHand.Net.Bluetooth.Sdp
             ElementTypeDescriptor etd;
             Debug.Assert(length >= 1); //is checked above!
             etd = GetElementTypeDescriptor(buffer[offset]);
-            if (etd != ElementTypeDescriptor.ElementSequence) {
+            if (etd != ElementTypeDescriptor.ElementSequence)
+            {
                 throw CreateInvalidException(ErrorMsgTopElementNotSequence, offset);
             }
             //
             int elementLength = GetElementLength(buffer, offset, length, out int contentOffset, out int contentLength);
-            if (elementLength > length) {
+            if (elementLength > length)
+            {
                 throw CreateInvalidExceptionOverruns(offset, elementLength, length);
             }
             //
@@ -443,16 +502,19 @@ namespace InTheHand.Net.Bluetooth.Sdp
             //
             int curOffset = offset + contentOffset;
             int curLength = contentLength;
-            while (curLength > 0) {
+            while (curLength > 0)
+            {
                 ElementTypeDescriptor etdInner;
                 Debug.Assert(length >= 1); //is checked above!
                 etdInner = GetElementTypeDescriptor(buffer[curOffset]);
-                if (etdInner != ElementTypeDescriptor.ElementSequence) {
+                if (etdInner != ElementTypeDescriptor.ElementSequence)
+                {
                     throw CreateInvalidException(ErrorMsgMultiSeqChildElementNotSequence, curOffset);
                 }
                 //
                 int elementLengthInner = GetElementLength(buffer, curOffset, curLength, out var contentOffsetInner, out var contentLengthInner);
-                if (elementLengthInner > curLength) {
+                if (elementLengthInner > curLength)
+                {
                     throw CreateInvalidExceptionOverruns(curOffset, elementLengthInner, curLength);
                 }
                 //
@@ -577,73 +639,108 @@ namespace InTheHand.Net.Bluetooth.Sdp
             // 'unknown' element depending on the settings.
             ElementType type = ElementType.Unknown;
             // -- Parse --
-            if (etd == ElementTypeDescriptor.Nil) { //----------------
+            if (etd == ElementTypeDescriptor.Nil)
+            { //----------------
                 type = ElementType.Nil;
                 rawValue = null;
-            } else if (etd == ElementTypeDescriptor.UnsignedInteger
-                        || etd == ElementTypeDescriptor.TwosComplementInteger) { //----------------
-                if (contentLength == 1) {
+            }
+            else if (etd == ElementTypeDescriptor.UnsignedInteger
+                        || etd == ElementTypeDescriptor.TwosComplementInteger)
+            { //----------------
+                if (contentLength == 1)
+                {
                     byte valueU8 = ReadFieldUInt8_Content(networkOrderInteger, buffer, offset, length);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt8;
                         rawValue = valueU8;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int8;
                         rawValue = unchecked((SByte)valueU8);
                     }
-                } else if (contentLength == 2) {
+                }
+                else if (contentLength == 2)
+                {
                     ushort valueU16 = ReadFieldUInt16_Content(networkOrderInteger, buffer, offset, length);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt16;
                         rawValue = valueU16;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int16;
                         rawValue = unchecked((Int16)valueU16);
                     }
-                } else if (contentLength == 4) {
+                }
+                else if (contentLength == 4)
+                {
                     uint valueU32 = ReadFieldUInt32_Content(networkOrderInteger, buffer, offset, length);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt32;
                         rawValue = valueU32;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int32;
                         rawValue = unchecked((Int32)valueU32);
                     }
-                } else if (contentLength == 8) {
+                }
+                else if (contentLength == 8)
+                {
                     ulong valueU64 = ReadFieldUInt64_Content(networkOrderInteger, buffer, offset, length);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt64;
                         rawValue = valueU64;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int64;
                         rawValue = unchecked((Int64)valueU64);
                     }
-                } else if (contentLength == 16) {
+                }
+                else if (contentLength == 16)
+                {
                     //int my_readLength;
                     byte[] valueArr128 = ReadArray_Content(buffer, offset, length);
-                    if (!networkOrderInteger) {
+                    if (!networkOrderInteger)
+                    {
                         Array.Reverse(valueArr128);
                     }
                     //Debug.Assert(my_readLength == 16, "but readLength is : " + my_readLength);
                     //Debug.Assert(valueArr128.Length == 16, "but valueArr128.Length is : " + valueArr128.Length);
-                    if (etd == ElementTypeDescriptor.UnsignedInteger) {
+                    if (etd == ElementTypeDescriptor.UnsignedInteger)
+                    {
                         type = ElementType.UInt128;
                         rawValue = valueArr128;
-                    } else {
+                    }
+                    else
+                    {
                         type = ElementType.Int128;
                         rawValue = valueArr128;
                     }
                 }
-            } else if (etd == ElementTypeDescriptor.Uuid) { //----------------
-                if (contentLength == 2) {
+            }
+            else if (etd == ElementTypeDescriptor.Uuid)
+            { //----------------
+                if (contentLength == 2)
+                {
                     ushort valueU16 = ReadFieldUInt16_Content(networkOrderUuid, buffer, offset + contentOffset, length - contentOffset);
                     type = ElementType.Uuid16;
                     rawValue = valueU16;
-                } else if (contentLength == 4) {
+                }
+                else if (contentLength == 4)
+                {
                     uint valueU32 = ReadFieldUInt32_Content(networkOrderUuid, buffer, offset + contentOffset, length - contentOffset);
                     type = ElementType.Uuid32;
                     rawValue = valueU32;
-                } else if (contentLength == 16) {
+                }
+                else if (contentLength == 16)
+                {
                     offset += contentOffset;
                     Guid guidValue = new Guid(
                         // NETCF doesn't have #ctor(uint, ushort, ...) overload.
@@ -661,43 +758,58 @@ namespace InTheHand.Net.Bluetooth.Sdp
                     type = ElementType.Uuid128;
                     rawValue = guidValue;
                 }
-            } else if (etd == ElementTypeDescriptor.Boolean) { //----------------
+            }
+            else if (etd == ElementTypeDescriptor.Boolean)
+            { //----------------
                 Debug.Assert(contentLength == 1);
                 byte valueU8 = ReadFieldUInt8(buffer, offset + contentOffset, length - contentOffset);
                 bool valueBoolean = valueU8 != 0;
                 rawValue = valueBoolean;
                 type = ElementType.Boolean;
-            } else if (etd == ElementTypeDescriptor.ElementSequence
-                    || etd == ElementTypeDescriptor.ElementAlternative) {
+            }
+            else if (etd == ElementTypeDescriptor.ElementSequence
+                    || etd == ElementTypeDescriptor.ElementAlternative)
+            {
                 throw new InvalidOperationException("INTERNAL ERROR: Not supported here!!");
-            } else if (etd == ElementTypeDescriptor.Url) { //----------------
+            }
+            else if (etd == ElementTypeDescriptor.Url)
+            { //----------------
                 byte[] valueArray = ReadArray_Content(buffer, offset, length);
-                if (LazyUrlCreation) {
+                if (LazyUrlCreation)
+                {
                     rawValue = valueArray;
-                } else {
+                }
+                else
+                {
                     string valueUri = CreateUriStringFromBytes(valueArray);
                     rawValue = valueUri;
                 }
                 type = ElementType.Url;
-            } else if (etd == ElementTypeDescriptor.TextString) { //----------------
+            }
+            else if (etd == ElementTypeDescriptor.TextString)
+            { //----------------
                 byte[] valueArray = ReadArray_Content(buffer, offset, length);
                 type = ElementType.TextString;
                 rawValue = valueArray;
             }
             // --------
             // Use parse result (or lack of!).
-            if (type == ElementType.Unknown) {
+            if (type == ElementType.Unknown)
+            {
                 // If we haven't handled the type, we'll end-up here.
                 string msg = "Element type: " + etd + ", SizeIndex: " + dbgSizeIndex
                     + ", at contentLength: " + contentLength
                     + ", at offset: " + offset + ".";
-                if (SkipUnhandledElementTypes) {
+                if (SkipUnhandledElementTypes)
+                {
                     type = ElementType.Unknown;
                     etd = ElementTypeDescriptor.Unknown;
                     rawValue = null;
                     Debug.WriteLine(
                         "Unhandled SDP Parse " + msg);
-                } else {
+                }
+                else
+                {
                     throw new_NotImplementedException(msg);
                 }
             }
@@ -756,25 +868,32 @@ namespace InTheHand.Net.Bluetooth.Sdp
             // As we can be called by sub-types we need to do 'public' arg checking...
             if (buffer == null) { throw new ArgumentNullException("buffer"); }
             if (length <= 0) { throw new ArgumentOutOfRangeException("length"); }
-            if (index < 0 || index == int.MaxValue) { // As suggested by FxCop
+            if (index < 0 || index == int.MaxValue)
+            { // As suggested by FxCop
                 throw new ArgumentOutOfRangeException("index");
             }
-            if (length > buffer.Length - index) {
+            if (length > buffer.Length - index)
+            {
                 throw new ArgumentException("length and index overruns buffer.");
             }
             //
             ElementTypeDescriptor etd;
             SizeIndex si;
             SplitHeaderByte(buffer[index], out etd, out si);
-            if (etd == ElementTypeDescriptor.Nil) {
-                if (si == SizeIndex.LengthOneByteOrNil) {
+            if (etd == ElementTypeDescriptor.Nil)
+            {
+                if (si == SizeIndex.LengthOneByteOrNil)
+                {
                     contentOffset = 1; //not valid for Nil, but return a length anyway
                     contentLength = 0;
                     return 1; //one byte length element
                 }
                 throw CreateInvalidException(ErrorMsgSizeIndexNotSuitTypeD, index);
-            } else {
-                switch (si) {
+            }
+            else
+            {
+                switch (si)
+                {
                     case SizeIndex.LengthOneByteOrNil:
                         contentOffset = 1;
                         return FixupLength(1, contentOffset, out contentLength, index);
@@ -812,7 +931,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         private static int FixupLength(UInt32 contentLength, int contentOffsetAlsoHeaderBytesLength, out int outContentLength, int index)
         {
             Int64 fullLength = contentLength + contentOffsetAlsoHeaderBytesLength;
-            if (fullLength > Int32.MaxValue) {
+            if (fullLength > Int32.MaxValue)
+            {
                 throw new System.Net.ProtocolViolationException(
                     String.Format(System.Globalization.CultureInfo.InvariantCulture,
                         ErrorMsgFormatNotSupportFull32bitSized, index));
@@ -826,7 +946,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         //--------------------------------------------------------------
         private static void CheckParseLength(int index, int length, int requiredLength)
         {
-            if (requiredLength > length) {
+            if (requiredLength > length)
+            {
                 throw CreateInvalidException(ErrorMsgFormatTruncated, index);
             }
         }
@@ -1029,7 +1150,8 @@ namespace InTheHand.Net.Bluetooth.Sdp
         //--------------------------------------------------------------
         internal static void VerifyTypeMatchesEtd(ElementTypeDescriptor etd, ElementType type)
         {
-            if (!TypeMatchesEtd(etd, type)) {
+            if (!TypeMatchesEtd(etd, type))
+            {
                 throw new ProtocolViolationException(String.Format(System.Globalization.CultureInfo.InvariantCulture,
                     ErrorMsgFormatTypeNotTypeDSubtype, etd, type));
             }
@@ -1040,36 +1162,55 @@ namespace InTheHand.Net.Bluetooth.Sdp
         public static bool TypeMatchesEtd(ElementTypeDescriptor etd, ElementType type)
         {
             bool matches = false;
-            if (etd == ElementTypeDescriptor.Unknown) {
+            if (etd == ElementTypeDescriptor.Unknown)
+            {
                 matches = (type == ElementType.Unknown);
-            } else
-            if (etd == ElementTypeDescriptor.Nil) {
+            }
+            else
+            if (etd == ElementTypeDescriptor.Nil)
+            {
                 matches = (type == ElementType.Nil);
-            } else if (etd == ElementTypeDescriptor.UnsignedInteger) {
+            }
+            else if (etd == ElementTypeDescriptor.UnsignedInteger)
+            {
                 matches = (type == ElementType.UInt8)
                     || (type == ElementType.UInt16)
                     || (type == ElementType.UInt32)
                     || (type == ElementType.UInt64)
                     || (type == ElementType.UInt128);
-            } else if (etd == ElementTypeDescriptor.TwosComplementInteger) {
+            }
+            else if (etd == ElementTypeDescriptor.TwosComplementInteger)
+            {
                 matches = (type == ElementType.Int8)
                     || (type == ElementType.Int16)
                     || (type == ElementType.Int32)
                     || (type == ElementType.Int64)
                     || (type == ElementType.Int128);
-            } else if (etd == ElementTypeDescriptor.Uuid) {
+            }
+            else if (etd == ElementTypeDescriptor.Uuid)
+            {
                 matches = (type == ElementType.Uuid16)
                     || (type == ElementType.Uuid32)
                     || (type == ElementType.Uuid128);
-            } else if (etd == ElementTypeDescriptor.TextString) {
+            }
+            else if (etd == ElementTypeDescriptor.TextString)
+            {
                 matches = (type == ElementType.TextString);
-            } else if (etd == ElementTypeDescriptor.Boolean) {
+            }
+            else if (etd == ElementTypeDescriptor.Boolean)
+            {
                 matches = (type == ElementType.Boolean);
-            } else if (etd == ElementTypeDescriptor.ElementSequence) {
+            }
+            else if (etd == ElementTypeDescriptor.ElementSequence)
+            {
                 matches = (type == ElementType.ElementSequence);
-            } else if (etd == ElementTypeDescriptor.ElementAlternative) {
+            }
+            else if (etd == ElementTypeDescriptor.ElementAlternative)
+            {
                 matches = (type == ElementType.ElementAlternative);
-            } else if (etd == ElementTypeDescriptor.Url) {
+            }
+            else if (etd == ElementTypeDescriptor.Url)
+            {
                 matches = (type == ElementType.Url);
             }
             return matches;
@@ -1081,34 +1222,53 @@ namespace InTheHand.Net.Bluetooth.Sdp
             ElementTypeDescriptor etd;
             //if (type == ElementType.Unknown) {
             //    etd = ElementTypeDescriptor.Unknown;}else
-            if (type == ElementType.Nil) {
+            if (type == ElementType.Nil)
+            {
                 etd = ElementTypeDescriptor.Nil;
-            } else if ((type == ElementType.UInt8)
+            }
+            else if ((type == ElementType.UInt8)
                         || (type == ElementType.UInt16)
                         || (type == ElementType.UInt64)
-                        || (type == ElementType.UInt32)) {
+                        || (type == ElementType.UInt32))
+            {
                 etd = ElementTypeDescriptor.UnsignedInteger;
-            } else if ((type == ElementType.Int8)
+            }
+            else if ((type == ElementType.Int8)
                         || (type == ElementType.Int16)
                         || (type == ElementType.Int64)
-                        || (type == ElementType.Int32)) {
+                        || (type == ElementType.Int32))
+            {
                 etd = ElementTypeDescriptor.TwosComplementInteger;
-            } else if ((type == ElementType.Uuid16)
+            }
+            else if ((type == ElementType.Uuid16)
                          || (type == ElementType.Uuid32)
-                         || (type == ElementType.Uuid128)) {
+                         || (type == ElementType.Uuid128))
+            {
                 etd = ElementTypeDescriptor.Uuid;
-            } else if ((type == ElementType.TextString)) {
+            }
+            else if ((type == ElementType.TextString))
+            {
                 etd = ElementTypeDescriptor.TextString;
-            } else if ((type == ElementType.Boolean)) {
+            }
+            else if ((type == ElementType.Boolean))
+            {
                 etd = ElementTypeDescriptor.Boolean;
-            } else if ((type == ElementType.ElementSequence)) {
+            }
+            else if ((type == ElementType.ElementSequence))
+            {
                 etd = ElementTypeDescriptor.ElementSequence;
-            } else if ((type == ElementType.ElementAlternative)) {
+            }
+            else if ((type == ElementType.ElementAlternative))
+            {
                 etd = ElementTypeDescriptor.ElementAlternative;
-            } else if ((type == ElementType.Url)) {
+            }
+            else if ((type == ElementType.Url))
+            {
                 etd = ElementTypeDescriptor.Url;
-            } else {
-                throw new_ArgumentOutOfRangeException("type", 
+            }
+            else
+            {
+                throw new_ArgumentOutOfRangeException("type",
                     String.Format(System.Globalization.CultureInfo.InvariantCulture,
                         ErrorMsgFormatUnknownType, type));
             }
@@ -1117,12 +1277,13 @@ namespace InTheHand.Net.Bluetooth.Sdp
 #endif
             return etd;
         }
-        
+
         //--------------------------------------------------------------
 
         internal static void VerifyAllowedSizeIndex(ElementTypeDescriptor etd, SizeIndex sizeIndex, bool allowAnySizeIndexForUnknownTypeDescriptorElements)
         {
-            if (!IsAllowedSizeIndex(etd, sizeIndex, allowAnySizeIndexForUnknownTypeDescriptorElements)) {
+            if (!IsAllowedSizeIndex(etd, sizeIndex, allowAnySizeIndexForUnknownTypeDescriptorElements))
+            {
                 throw new ProtocolViolationException(ErrorMsgSizeIndexNotSuitTypeD);
             }
         }
@@ -1131,27 +1292,36 @@ namespace InTheHand.Net.Bluetooth.Sdp
         {
             bool isValidSi = false;
             if (etd == ElementTypeDescriptor.Nil
-                || etd == ElementTypeDescriptor.Boolean) {
+                || etd == ElementTypeDescriptor.Boolean)
+            {
                 isValidSi = (sizeIndex == SizeIndex.LengthOneByteOrNil);
-            } else if (etd == ElementTypeDescriptor.UnsignedInteger
-                    || etd == ElementTypeDescriptor.TwosComplementInteger) {
+            }
+            else if (etd == ElementTypeDescriptor.UnsignedInteger
+                    || etd == ElementTypeDescriptor.TwosComplementInteger)
+            {
                 isValidSi = (sizeIndex == SizeIndex.LengthOneByteOrNil)
                             || (sizeIndex == SizeIndex.LengthTwoBytes)
                             || (sizeIndex == SizeIndex.LengthFourBytes)
                             || (sizeIndex == SizeIndex.LengthEightBytes)
                             || (sizeIndex == SizeIndex.LengthSixteenBytes);
-            } else if (etd == ElementTypeDescriptor.Uuid) {
+            }
+            else if (etd == ElementTypeDescriptor.Uuid)
+            {
                 isValidSi = (sizeIndex == SizeIndex.LengthTwoBytes)
                         || (sizeIndex == SizeIndex.LengthFourBytes)
                         || (sizeIndex == SizeIndex.LengthSixteenBytes);
-            } else if (etd == ElementTypeDescriptor.TextString
+            }
+            else if (etd == ElementTypeDescriptor.TextString
                     || etd == ElementTypeDescriptor.ElementSequence
                     || etd == ElementTypeDescriptor.ElementAlternative
-                    || etd == ElementTypeDescriptor.Url) {
+                    || etd == ElementTypeDescriptor.Url)
+            {
                 isValidSi = (sizeIndex == SizeIndex.AdditionalUInt8)
                         || (sizeIndex == SizeIndex.AdditionalUInt16)
                         || (sizeIndex == SizeIndex.AdditionalUInt32);
-            } else {
+            }
+            else
+            {
                 isValidSi = allowAnySizeIndexForUnknownTypeDescriptorElements;
             }
             return isValidSi;

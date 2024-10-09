@@ -18,7 +18,7 @@ namespace InTheHand.Net.Sockets
         void Stop();
 
         bool Pending();
-        
+
         bool Active { get; }
 
         Guid ServiceUuid { get; set; }

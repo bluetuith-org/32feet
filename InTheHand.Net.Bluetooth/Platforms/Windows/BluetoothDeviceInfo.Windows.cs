@@ -6,8 +6,12 @@
 // This source code is licensed under the MIT License
 
 using InTheHand.Net.Bluetooth;
+using InTheHand.Net.Bluetooth.AttributeIds;
+using InTheHand.Net.Bluetooth.Sdp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
 
@@ -50,7 +54,53 @@ namespace InTheHand.Net.Sockets
 
         public async Task<IEnumerable<Guid>> GetL2CapServicesAsync(bool cached)
         {
-            throw new NotImplementedException();
+            List<Guid> services = new List<Guid>();
+
+            foreach (var sdpRecord in NativeDevice.SdpRecords)
+            {
+                Guid protocolUUID = Guid.Empty;
+
+                ServiceRecord attributes = ServiceRecord.CreateServiceRecordFromBytes(sdpRecord.ToArray());
+
+                var attribute = attributes.GetAttributeById(UniversalAttributeId.ProtocolDescriptorList);
+                if (attribute != null)
+                {
+                    try
+                    {
+                        var vals = attribute.Value.
+                        GetValueAsElementList().
+                        FirstOrDefault().
+                        GetValueAsElementList();
+
+                        // values in a list from most to least specific so read the first entry
+                        var mostSpecific = vals.FirstOrDefault();
+                        // short ids are automatically converted to a long Guid
+                        protocolUUID = mostSpecific.GetValueAsUuid();
+                    }
+                    catch { protocolUUID = Guid.Empty; }
+                }
+
+                if (protocolUUID != BluetoothProtocol.L2CapProtocol)
+                    continue;
+
+                attribute = attributes.GetAttributeById(UniversalAttributeId.ServiceClassIdList);
+                if (attribute != null)
+                {
+                    try
+                    {
+                        var vals = attribute.Value.GetValueAsElementList();
+                        // values in a list from most to least specific so read the first entry
+                        var mostSpecific = vals.FirstOrDefault();
+                        // short ids are automatically converted to a long Guid
+                        var guid = mostSpecific.GetValueAsUuid();
+
+                        services.Add(guid);
+                    }
+                    catch { }
+                }
+            }
+
+            return services;
         }
 
         public async Task<IEnumerable<Guid>> GetRfcommServicesAsync(bool cached)

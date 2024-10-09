@@ -28,7 +28,7 @@ namespace InTheHand.Net.Bluetooth.Sdp
         Uuid = 3,
         TextString = 4,
         Boolean = 5,
-        ElementSequence = 6, 
+        ElementSequence = 6,
         ElementAlternative = 7,
         Url = 8
     }//enum

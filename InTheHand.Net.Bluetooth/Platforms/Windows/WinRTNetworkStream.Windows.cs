@@ -186,7 +186,7 @@ namespace InTheHand.Net.Sockets
         {
             _outputStream.Write(buffer);
         }
-        
+
         /// <inheritdoc/>
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {

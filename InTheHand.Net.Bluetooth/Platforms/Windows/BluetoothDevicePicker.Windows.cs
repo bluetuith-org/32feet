@@ -6,12 +6,12 @@
 // This source code is licensed under the MIT License
 
 using InTheHand.Net.Sockets;
-using Windows.Devices.Enumeration;
 using System;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Devices.Bluetooth;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Windows.Devices.Bluetooth;
+using Windows.Devices.Enumeration;
+using Windows.Foundation;
 #if WinRT
 using System.Runtime.InteropServices;
 #endif
@@ -21,7 +21,7 @@ namespace InTheHand.Net.Bluetooth
     internal sealed class WindowsBluetoothDevicePicker : IBluetoothDevicePicker
     {
         private DevicePicker picker = new DevicePicker();
-            
+
         public async Task<BluetoothDeviceInfo> PickSingleDeviceAsync(List<ClassOfDevice> classOfDevices, bool requiresAuthentication)
         {
             Rect bounds = new Rect(0, 0, 0, 0);
