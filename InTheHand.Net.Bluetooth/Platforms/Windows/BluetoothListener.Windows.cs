@@ -6,6 +6,7 @@
 // This source code is licensed under the MIT License
 
 using InTheHand.Net.Bluetooth;
+using InTheHand.Net.Bluetooth.Platforms.Windows;
 using InTheHand.Net.Bluetooth.Sdp;
 using System;
 using Windows.Devices.Bluetooth.Rfcomm;
