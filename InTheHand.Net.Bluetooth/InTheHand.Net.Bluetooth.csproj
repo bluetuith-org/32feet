@@ -9,9 +9,6 @@
 		<RepositoryUrl>https://github.com/inthehand/32feet</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
-		<IncludeSymbols>true</IncludeSymbols>
-		<DebugSymbols>true</DebugSymbols>
-		<DebugType>portable</DebugType>
 		<Nullable>disable</Nullable>
 		<CheckEolWorkloads>false</CheckEolWorkloads>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -24,17 +21,13 @@
 		<AssemblyVersion>4.1.0.0</AssemblyVersion>
 		<AssemblyName>InTheHand.Net.Bluetooth</AssemblyName>
 		<AssemblyTitle>InTheHand.Net.Bluetooth-$(TargetFramework)</AssemblyTitle>
-		<GenerateDocumentationFile Condition=" '$(Configuration)' == 'Release' ">true</GenerateDocumentationFile>
 		<PackageTags>bluetooth windows win32 android iOS linux</PackageTags>
 		<GenerateLibraryLayout>true</GenerateLibraryLayout>
-		<GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageId>InTheHand.Net.Bluetooth</PackageId>
 		<PackageReleaseNotes>Added BluetoothDeviceInfo constructor from a BluetoothAddress.</PackageReleaseNotes>
 		<PackageIcon>32feet-package-icon.png</PackageIcon>
-		<SignAssembly Condition=" '$(Configuration)' == 'Release' ">true</SignAssembly>
-		<AssemblyOriginatorKeyFile Condition=" '$(Configuration)' == 'Release' ">InTheHand.snk</AssemblyOriginatorKeyFile>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">12.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
